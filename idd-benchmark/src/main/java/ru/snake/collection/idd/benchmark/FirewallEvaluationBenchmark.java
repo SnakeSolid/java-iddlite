@@ -1,8 +1,10 @@
 package ru.snake.collection.idd.benchmark;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -15,27 +17,33 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
+import ru.snake.collection.idd.util.DotExporter;
+import ru.snake.collection.idd.util.IDDPrinter;
 
 /**
  * JMH benchmark for IDD firewall evaluation.
  *
  * <p>
- * Builds a firewall policy from N rules (parameterised), then evaluates a
- * fixed set of deterministic packets against the compiled IDD. This mirrors
- * the logic from {@code FirewallRuleTest} but runs under proper JMH controls.
+ * Builds a firewall policy from N rules (parameterised), then evaluates a fixed
+ * set of deterministic packets against the compiled IDD. This mirrors the logic
+ * from {@code FirewallRuleTest} but runs under proper JMH controls.
  *
  * <p>
  * Run with:
+ * 
  * <pre>
  *   java -jar idd-benchmark-1.0.0.jar
  * </pre>
+ * 
  * Or via Maven:
+ * 
  * <pre>
  *   mvn -pl idd-benchmark package
  *   java -jar idd-benchmark/target/idd-benchmark-1.0.0.jar
@@ -53,9 +61,13 @@ public class FirewallEvaluationBenchmark {
 	// ------------------------------------------------------------------
 
 	private static final String VAR_SRC_IP = "src_ip";
+
 	private static final String VAR_DST_IP = "dst_ip";
+
 	private static final String VAR_SRC_PORT = "src_port";
+
 	private static final String VAR_DST_PORT = "dst_port";
+
 	private static final String VAR_PROTOCOL = "protocol";
 
 	// ------------------------------------------------------------------
@@ -63,14 +75,19 @@ public class FirewallEvaluationBenchmark {
 	// ------------------------------------------------------------------
 
 	private static final int PROTO_ICMP = 1;
+
 	private static final int PROTO_TCP = 6;
+
 	private static final int PROTO_UDP = 17;
 
 	// ------------------------------------------------------------------
 	// Parameters
 	// ------------------------------------------------------------------
 
-	/** Number of rules to build the firewall from (first N rules of the standard set). */
+	/**
+	 * Number of rules to build the firewall from (first N rules of the standard
+	 * set).
+	 */
 	@Param({ "10", "30", "60", "120", "200" })
 	public int ruleCount;
 
@@ -90,13 +107,7 @@ public class FirewallEvaluationBenchmark {
 
 	@Setup(Level.Trial)
 	public void setUp() {
-		order = new VariableOrder(
-			VAR_SRC_IP,
-			VAR_DST_IP,
-			VAR_SRC_PORT,
-			VAR_DST_PORT,
-			VAR_PROTOCOL
-		);
+		order = new VariableOrder(VAR_SRC_IP, VAR_DST_IP, VAR_SRC_PORT, VAR_DST_PORT, VAR_PROTOCOL);
 		factory = new IDDFactory(order);
 
 		firewall = buildFirewall(ruleCount);
@@ -111,13 +122,14 @@ public class FirewallEvaluationBenchmark {
 	 * Evaluates the entire deterministic packet set against the firewall IDD.
 	 *
 	 * <p>
-	 * Measures wall-clock throughput for N sequential evaluations.
-	 * Each iteration evaluates all 1000 packets.
+	 * Measures wall-clock throughput for N sequential evaluations. Each
+	 * iteration evaluates all 1000 packets.
 	 */
 	@Benchmark
 	@BenchmarkMode({ Mode.AverageTime, Mode.Throughput })
 	public boolean evaluateAll() {
 		boolean acceptedCount = false;
+
 		for (int[] pkt : packets) {
 			boolean result = Evaluate.evaluate(
 				firewall,
@@ -135,10 +147,12 @@ public class FirewallEvaluationBenchmark {
 					pkt[4]
 				)
 			);
+
 			if (result) {
 				acceptedCount = true;
 			}
 		}
+
 		return acceptedCount;
 	}
 
@@ -149,13 +163,8 @@ public class FirewallEvaluationBenchmark {
 	/**
 	 * A single firewall rule specification.
 	 */
-	private record RuleSpec(
-		String srcIp,
-		String dstIp,
-		String srcPort,
-		String dstPort,
-		Integer protocol
-	) {}
+	private record RuleSpec(String srcIp, String dstIp, String srcPort, String dstPort, Integer protocol) {
+	}
 
 	private static final List<RuleSpec> ALL_RULES = List.of(
 		// 1: Loopback
@@ -189,13 +198,7 @@ public class FirewallEvaluationBenchmark {
 		// 15: SIP
 		new RuleSpec("10.20.0.0/16", "10.20.0.0/16", "*", "5060", PROTO_UDP),
 		// 16: RTP media
-		new RuleSpec(
-			"10.20.0.0/16",
-			"10.20.0.0/16",
-			"*",
-			"10000-20000",
-			PROTO_UDP
-		),
+		new RuleSpec("10.20.0.0/16", "10.20.0.0/16", "*", "10000-20000", PROTO_UDP),
 		// 17: IMAP
 		new RuleSpec("10.0.0.0/8", "172.16.0.0/12", "*", "143", PROTO_TCP),
 		// 18: IMAPS
@@ -289,11 +292,21 @@ public class FirewallEvaluationBenchmark {
 	private IDD buildFirewall(int ruleCount) {
 		IDD firewall = IDD.FALSE;
 		int count = Math.min(ruleCount, ALL_RULES.size());
+
 		for (int i = 0; i < count; i++) {
 			RuleSpec spec = ALL_RULES.get(i);
 			firewall = Apply.or(factory, firewall, buildRule(spec));
 		}
+
 		return firewall;
+	}
+
+	public static void main(String[] args) throws IOException {
+		FirewallEvaluationBenchmark firewall = new FirewallEvaluationBenchmark();
+		firewall.order = new VariableOrder(VAR_SRC_IP, VAR_DST_IP, VAR_SRC_PORT, VAR_DST_PORT, VAR_PROTOCOL);
+		firewall.factory = new IDDFactory(firewall.order);
+		IDD idd = firewall.buildFirewall(ALL_RULES.size());
+		System.out.println(IDDPrinter.printTree(idd, firewall.order));
 	}
 
 	private IDD buildRule(RuleSpec spec) {
@@ -301,47 +314,30 @@ public class FirewallEvaluationBenchmark {
 		int[] d = resolveIp(spec.dstIp());
 		int[] sp = resolvePort(spec.srcPort());
 		int[] dp = resolvePort(spec.dstPort());
-		int[] pr =
-			spec.protocol() != null
-				? new int[] { spec.protocol(), spec.protocol() }
-				: new int[] { 0, 255 };
+		int[] pr = spec.protocol() != null ? new int[] { spec.protocol(), spec.protocol() } : new int[] { 0, 255 };
 
-		IDD result = factory.buildFromIntervals(
-			VAR_SRC_IP,
-			List.of(new Edge(s[0], s[1], factory.trueNode()))
+		IDD result = factory.buildFromIntervals(VAR_SRC_IP, List.of(new Edge(s[0], s[1], factory.trueNode())));
+		result = Apply.and(
+			factory,
+			result,
+			factory.buildFromIntervals(VAR_DST_IP, List.of(new Edge(d[0], d[1], factory.trueNode())))
 		);
 		result = Apply.and(
 			factory,
 			result,
-			factory.buildFromIntervals(
-				VAR_DST_IP,
-				List.of(new Edge(d[0], d[1], factory.trueNode()))
-			)
+			factory.buildFromIntervals(VAR_SRC_PORT, List.of(new Edge(sp[0], sp[1], factory.trueNode())))
 		);
 		result = Apply.and(
 			factory,
 			result,
-			factory.buildFromIntervals(
-				VAR_SRC_PORT,
-				List.of(new Edge(sp[0], sp[1], factory.trueNode()))
-			)
+			factory.buildFromIntervals(VAR_DST_PORT, List.of(new Edge(dp[0], dp[1], factory.trueNode())))
 		);
 		result = Apply.and(
 			factory,
 			result,
-			factory.buildFromIntervals(
-				VAR_DST_PORT,
-				List.of(new Edge(dp[0], dp[1], factory.trueNode()))
-			)
+			factory.buildFromIntervals(VAR_PROTOCOL, List.of(new Edge(pr[0], pr[1], factory.trueNode())))
 		);
-		result = Apply.and(
-			factory,
-			result,
-			factory.buildFromIntervals(
-				VAR_PROTOCOL,
-				List.of(new Edge(pr[0], pr[1], factory.trueNode()))
-			)
-		);
+
 		return result;
 	}
 
@@ -350,9 +346,9 @@ public class FirewallEvaluationBenchmark {
 	// ==================================================================
 
 	/**
-	 * Generates a fixed set of 1000 deterministic packets using a seeded
-	 * LCG (linear congruential generator). Same seeds always produce the
-	 * same packets, making benchmark results fully reproducible.
+	 * Generates a fixed set of 1000 deterministic packets using a seeded LCG
+	 * (linear congruential generator). Same seeds always produce the same
+	 * packets, making benchmark results fully reproducible.
 	 */
 	private static int[][] generateDeterministicPackets() {
 		DetRng rng = new DetRng(12345);
@@ -388,6 +384,7 @@ public class FirewallEvaluationBenchmark {
 
 			packets[i] = new int[] { srcIp, dstIp, srcPort, dstPort, proto };
 		}
+
 		return packets;
 	}
 
@@ -416,18 +413,15 @@ public class FirewallEvaluationBenchmark {
 
 	private static int ip(String addr) {
 		String[] parts = addr.split("\\.");
-		return (
-			((Integer.parseInt(parts[0]) & 0xFF) << 24) |
-			((Integer.parseInt(parts[1]) & 0xFF) << 16) |
-			((Integer.parseInt(parts[2]) & 0xFF) << 8) |
-			(Integer.parseInt(parts[3]) & 0xFF)
-		);
+		return (((Integer.parseInt(parts[0]) & 0xFF) << 24) | ((Integer.parseInt(parts[1]) & 0xFF) << 16)
+				| ((Integer.parseInt(parts[2]) & 0xFF) << 8) | (Integer.parseInt(parts[3]) & 0xFF));
 	}
 
 	private static int[] resolveIp(String cidr) {
 		if (cidr == null || cidr.equals("*")) {
 			return new int[] { Integer.MIN_VALUE, Integer.MAX_VALUE };
 		}
+
 		return cidrRange(cidr);
 	}
 
@@ -445,13 +439,12 @@ public class FirewallEvaluationBenchmark {
 		if (spec == null || spec.equals("*")) {
 			return new int[] { 0, 65535 };
 		}
+
 		if (spec.contains("-")) {
 			String[] parts = spec.split("-");
-			return new int[] {
-				Integer.parseInt(parts[0]),
-				Integer.parseInt(parts[1]),
-			};
+			return new int[] { Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), };
 		}
+
 		return new int[] { Integer.parseInt(spec), Integer.parseInt(spec) };
 	}
 }

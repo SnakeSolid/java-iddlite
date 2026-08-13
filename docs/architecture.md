@@ -38,7 +38,7 @@ graph TD
     subgraph Utilities
         Interval["Interval"]
         DotExporter["DotExporter"]
-        IDDPrinter["IDDPrinter"]
+        IDDPrinter["IDDPrinter\n(print, printTree,\nprintCompact)"]
     end
 
     IDDBuilder --> IDDFactory
