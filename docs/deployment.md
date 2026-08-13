@@ -6,11 +6,13 @@
 ./mvnw clean package
 ```
 
-Produces `target/idd-core-1.0.0.jar`.
+Produces:
+- `idd-core/target/idd-core-1.0.0.jar` — core library
+- `idd-benchmark/target/idd-benchmark-1.0.0.jar` — standalone benchmark JAR (fat JAR with all dependencies)
 
 ## Dependencies
 
-The library has **zero runtime dependencies**. It requires only Java 17+:
+The **core library** has **zero runtime dependencies**. It requires only Java 17+:
 
 ```xml
 <dependency>
@@ -19,6 +21,19 @@ The library has **zero runtime dependencies**. It requires only Java 17+:
     <version>1.0.0</version>
 </dependency>
 ```
+
+The **benchmark module** depends on JMH (managed by the parent POM's `dependencyManagement`).
+
+## Multi-module structure
+
+The project uses a parent POM (`iddlite`) with two child modules. All dependency versions are centralised in the parent via `<dependencyManagement>`:
+
+| Module | Description |
+|---|---|
+| `idd-core` | Core IDD library (zero runtime deps) |
+| `idd-benchmark` | JMH benchmarks against `idd-core` |
+
+Versions of shared dependencies (`junit-jupiter`, `jmh-core`, `jmh-generator-annprocess`) are defined once in the parent POM properties and propagated via `<dependencyManagement>`.
 
 ## Installation
 

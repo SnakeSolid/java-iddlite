@@ -35,7 +35,7 @@ git clone <repo-url> && cd iddlite
 
 ```
 iddlite/
-├── pom.xml                          # Maven build configuration
+├── pom.xml                          # Parent POM (multi-module)
 ├── mvnw / mvnw.cmd                 # Maven wrapper
 ├── AGENTS.md                       # Agent navigation hub
 ├── README.md                       # Project overview
@@ -47,34 +47,43 @@ iddlite/
 │   ├── benchmark-results.md
 │   ├── memory-benchmarks.md
 │   └── deployment.md
-└── src/
-    ├── main/java/ru/snake/collection/idd/
-    │   ├── core/                   # Core data structures
-    │   │   ├── IDD.java
-    │   │   ├── Edge.java
-    │   │   ├── IDDFactory.java
-    │   │   ├── IDDBuilder.java
-    │   │   └── VariableOrder.java
-    │   ├── operation/              # IDD operations
-    │   │   ├── Apply.java
-    │   │   ├── Evaluate.java
-    │   │   ├── Quantify.java
-    │   │   └── Restrict.java
-    │   └── util/                   # Utilities
-    │       ├── Interval.java
-    │       ├── DotExporter.java
-    │       └── IDDPrinter.java
-    └── test/java/ru/snake/collection/idd/
-        ├── unit/                   # Unit tests (11 classes)
-        └── integration/            # Integration / stress tests (2 classes)
+├── idd-core/                       # Core library module
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/ru/snake/collection/idd/
+│       │   ├── core/               # Core data structures
+│       │   │   ├── IDD.java
+│       │   │   ├── Edge.java
+│       │   │   ├── IDDFactory.java
+│       │   │   ├── IDDBuilder.java
+│       │   │   └── VariableOrder.java
+│       │   ├── operation/          # IDD operations
+│       │   │   ├── Apply.java
+│       │   │   ├── Evaluate.java
+│       │   │   ├── Quantify.java
+│       │   │   └── Restrict.java
+│       │   └── util/               # Utilities
+│       │       ├── Interval.java
+│       │       ├── DotExporter.java
+│       │       └── IDDPrinter.java
+│       └── test/java/ru/snake/collection/idd/
+│           ├── unit/               # Unit tests (11 classes)
+│           └── integration/        # Integration / stress tests (3 classes)
+└── idd-benchmark/                  # JMH benchmark module
+    ├── pom.xml
+    └── src/main/java/ru/snake/collection/idd/benchmark/
+        └── FirewallEvaluationBenchmark.java
 ```
 
 ## Useful Maven commands
 
 ```bash
-./mvnw compile                  # Compile source code
-./mvnw test                    # Run all tests
-./mvnw package                 # Build JAR
+./mvnw compile                  # Compile all modules
+./mvnw test                     # Run all tests
+./mvnw package                  # Build all JARs
+./mvnw -pl idd-core test        # Test core module only
+./mvnw -pl idd-benchmark package   # Build benchmark JAR
+java -jar idd-benchmark/target/idd-benchmark-1.0.0.jar   # Run benchmarks
 ./mvnw javadoc:javadoc         # Generate Javadoc
 ./mvnw verify                  # Run full lifecycle
 ```

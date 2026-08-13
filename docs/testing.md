@@ -21,7 +21,8 @@ src/test/java/ru/snake/collection/idd/
 │   └── VariableOrderTest — Order basics, duplicates, bounds, compare
 └── integration/        — Integration and stress tests
     ├── ExtremeIntervalTest — MIN/MAX boundary correctness
-    └── StressTest        — Large-scale firewall simulation
+    ├── StressTest        — Large-scale firewall simulation
+    └── FirewallRuleTest  — 54-rule firewall with 5 variables
 ```
 
 ## Coverage summary
@@ -29,8 +30,8 @@ src/test/java/ru/snake/collection/idd/
 | Category | Tests |
 |---|---|
 | **Unit tests** | 58 |
-| **Integration tests** | 11 |
-| **Total** | 69 |
+| **Integration tests** | 14 |
+| **Total** | 72 |
 
 ## Testing patterns used
 

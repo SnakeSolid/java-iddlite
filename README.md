@@ -65,6 +65,17 @@ boolean result = Evaluate.evaluate(rule, order, Map.of("x", 7));
 ./mvnw test
 ```
 
+## Running benchmarks
+
+The project includes a JMH benchmark module that can be built into a standalone JAR:
+
+```bash
+./mvnw -pl idd-benchmark package
+java -jar idd-benchmark/target/idd-benchmark-1.0.0.jar
+```
+
+See [Benchmark results](./docs/benchmark-results.md) for details on running with specific parameters.
+
 ## Documentation
 
 - [Development setup](./docs/setup.md)

@@ -4,6 +4,10 @@
 
 IDD Core implements **Interval Decision Diagrams** — a variant of Reduced Ordered Binary Decision Diagrams (ROBDDs) where edges represent integer intervals rather than Boolean cofactors. This allows compact representation of predicates over integer domains such as IP addresses, port ranges, or threshold conditions.
 
+The project is a **multi-module Maven build**:
+- `idd-core` — the library itself
+- `idd-benchmark` — JMH benchmarks for performance evaluation
+
 ## Core design principles
 
 1. **Immutability** — all core classes (`IDD`, `Edge`, `Interval`, `VariableOrder`) are `final` and immutable.
