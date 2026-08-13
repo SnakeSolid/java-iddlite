@@ -1,0 +1,6 @@
+# Maven build output
+syntax: glob
+.classpath
+.project
+.settings/
+target/
