@@ -1,4 +1,6 @@
-# IDD Core
+# IDD Lite
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Interval Decision Diagram** library — a lightweight, canonical representation for Boolean functions over integer interval domains.
 
@@ -85,3 +87,7 @@ See [Benchmark results](./docs/benchmark-results.md) for details on running with
 - [Benchmark results](./docs/benchmark-results.md)
 - [Memory footprint](./docs/memory-benchmarks.md)
 - [Deployment & operations](./docs/deployment.md)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
