@@ -1,6 +1,5 @@
 package ru.snake.collection.idd.benchmark;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -24,8 +23,6 @@ import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
-import ru.snake.collection.idd.util.DotExporter;
-import ru.snake.collection.idd.util.IDDPrinter;
 
 /**
  * JMH benchmark for IDD firewall evaluation.
@@ -299,14 +296,6 @@ public class FirewallEvaluationBenchmark {
 		}
 
 		return firewall;
-	}
-
-	public static void main(String[] args) throws IOException {
-		FirewallEvaluationBenchmark firewall = new FirewallEvaluationBenchmark();
-		firewall.order = new VariableOrder(VAR_SRC_IP, VAR_DST_IP, VAR_SRC_PORT, VAR_DST_PORT, VAR_PROTOCOL);
-		firewall.factory = new IDDFactory(firewall.order);
-		IDD idd = firewall.buildFirewall(ALL_RULES.size());
-		System.out.println(IDDPrinter.printTree(idd, firewall.order));
 	}
 
 	private IDD buildRule(RuleSpec spec) {
