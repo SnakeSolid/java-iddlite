@@ -33,8 +33,9 @@ src/test/java/ru/snake/collection/idd/
 | Category | Tests |
 |---|---|
 | **Unit tests** | 82 |
+| **Firewall unit tests** | 35 |
 | **Integration tests** | 20 |
-| **Total** | 102 |
+| **Total** | 137 |
 
 ## Testing patterns used
 

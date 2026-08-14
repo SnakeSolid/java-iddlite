@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntFunction;
 
+import ru.snake.collection.idd.core.VariableOrder;
+
 /**
  * Pre-built {@link ValueFormatter} implementations and a fluent builder for
  * composing per-variable formatters.
@@ -160,7 +162,7 @@ public final class Formatters {
 	 * @param order the variable order to resolve names against
 	 * @return a new builder
 	 */
-	public static Builder builder(ru.snake.collection.idd.core.VariableOrder order) {
+	public static Builder builder(VariableOrder order) {
 		return new Builder(order);
 	}
 
@@ -169,11 +171,11 @@ public final class Formatters {
 	 */
 	public static final class Builder {
 
-		private final ru.snake.collection.idd.core.VariableOrder order;
+		private final VariableOrder order;
 
 		private final Map<Integer, IntFunction<String>> map = new HashMap<>();
 
-		private Builder(ru.snake.collection.idd.core.VariableOrder order) {
+		private Builder(VariableOrder order) {
 			if (order == null) {
 				throw new NullPointerException("VariableOrder must not be null");
 			}

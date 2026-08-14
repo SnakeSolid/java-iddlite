@@ -6,6 +6,7 @@ IDD Core implements **Interval Decision Diagrams** — a variant of Reduced Orde
 
 The project is a **multi-module Maven build**:
 - `idd-core` — the library itself
+- `idd-firewall` — firewall rule analysis tool (CLI)
 - `idd-benchmark` — JMH benchmarks for performance evaluation
 
 ## Core design principles
