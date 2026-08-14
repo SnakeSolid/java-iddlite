@@ -11,6 +11,7 @@ An IDD represents a Boolean function whose variables range over integer interval
 - **Structural sharing** — identical sub-expressions are the same object.
 - **Canonicity** — two IDDs are equal iff they are the same reference.
 - **Fast evaluation** — O(depth) walk through the diagram.
+- **Variable ranges** — each variable can have a custom valid range (e.g., `0..65535` for ports, `0..255` for protocols).
 
 Ideal for firewall rule sets, policy evaluation, and any domain with interval-based predicates.
 
@@ -35,13 +36,29 @@ IDD restricted = Restrict.restrict(factory, rule, "x", 5);
 boolean result = Evaluate.evaluate(rule, order, Map.of("x", 7));
 ```
 
+### Variable ranges
+
+Constrain variables to their semantic domains:
+
+```java
+Map<String, VariableRange> ranges = Map.of(
+    "port",  VariableRange.of(0, 65535),
+    "proto", VariableRange.of(0, 255)
+);
+VariableOrder order = new VariableOrder(ranges, "proto", "port");
+IDDFactory factory = new IDDFactory(order);
+```
+
+Gap filling and reduction now use each variable's range instead of `Integer.MIN_VALUE..Integer.MAX_VALUE`.
+
 ## Key features
 
 | Feature | Description |
 |---|---|
 | Hash-consing | Unique table via `WeakHashMap` — unreachable nodes are GC'd |
 | Edge normalisation | Gaps filled with FALSE edges; adjacent same-child edges merged |
-| Reduction | Nodes with a single full-domain edge are eliminated |
+| Reduction | Nodes with a single full-range edge are eliminated |
+| Variable ranges | Custom valid ranges per variable (e.g., ports: 0..65535) |
 | Boolean operations | AND, OR, NOT, XOR, IMPLIES |
 | Quantification | Existential (`exists`) and universal (`forall`) |
 | Restriction / cofactoring | Fix a variable to a concrete value |
@@ -53,7 +70,7 @@ boolean result = Evaluate.evaluate(rule, order, Map.of("x", 7));
 |---|---|
 | `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder` |
 | `ru.snake.collection.idd.operation` | `Apply`, `Evaluate`, `Quantify`, `Restrict` |
-| `ru.snake.collection.idd.util` | `Interval`, `DotExporter`, `IDDPrinter` |
+| `ru.snake.collection.idd.util` | `Interval`, `VariableRange`, `DotExporter`, `IDDPrinter` |
 
 ## Building
 

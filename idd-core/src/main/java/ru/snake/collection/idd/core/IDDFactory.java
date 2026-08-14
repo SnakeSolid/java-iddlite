@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 
+import ru.snake.collection.idd.util.VariableRange;
+
 /**
  * Factory for creating IDD nodes with hash-consing (unique table) and
  * reduction.
@@ -77,32 +79,72 @@ public final class IDDFactory {
 	 * same child, fills gaps with FALSE edges), performs reduction (eliminates
 	 * nodes with a single edge), and ensures hash-consing (returns the same
 	 * object for identical inputs).
+	 *
+	 * @param variable the variable index
+	 * @param rawEdges the edges for this node
+	 * @return the constructed or cached IDD node
+	 * @throws IllegalArgumentException if any edge is outside the variable's
+	 *         valid range
 	 */
 	public IDD getNode(int variable, List<Edge> rawEdges) {
-		List<Edge> normalised = normaliseEdges(rawEdges);
+		VariableRange range = order.range(variable);
 
-		// Reduction: if only one edge covering the full domain, eliminate the
+		// Validate raw edges are within the variable's range.
+		for (Edge e : rawEdges) {
+			if (e.low() < range.min() || e.high() > range.max()) {
+				throw new IllegalArgumentException(
+					"Edge [" +
+						e.low() +
+						"," +
+						e.high() +
+						"] out of range [" +
+						range.min() +
+						"," +
+						range.max() +
+						"] for variable " +
+						variable
+				);
+			}
+		}
+
+		List<Edge> normalised = normaliseEdges(variable, rawEdges);
+
+		// Reduction: if only one edge covering the full range, eliminate the
 		// node.
 		if (normalised.size() == 1) {
 			Edge e = normalised.get(0);
 
-			if (e.low() == Integer.MIN_VALUE && e.high() == Integer.MAX_VALUE) {
+			if (e.low() == range.min() && e.high() == range.max()) {
 				return e.child();
 			}
 		}
 
 		NodeKey key = new NodeKey(variable, normalised);
-		return uniqueTable.computeIfAbsent(key, k -> new IDD(variable, normalised));
+		return uniqueTable.computeIfAbsent(key, k ->
+			new IDD(variable, normalised)
+		);
 	}
 
 	/**
 	 * Normalises the edge list: 1. Sorts by low boundary. 2. Merges consecutive
 	 * edges pointing to the same child. 3. Fills gaps with FALSE edges.
+	 * <p>
+	 * Gap filling uses the variable's valid range as boundaries instead of the
+	 * full integer range.
+	 *
+	 * @param variable the variable index (used to look up the range)
+	 * @param rawEdges the edges to normalise
+	 * @return the normalised, unmodifiable edge list
+	 * @throws IllegalArgumentException if the edge list is empty
 	 */
-	private List<Edge> normaliseEdges(List<Edge> rawEdges) {
+	private List<Edge> normaliseEdges(int variable, List<Edge> rawEdges) {
 		if (rawEdges.isEmpty()) {
 			throw new IllegalArgumentException("Edge list must not be empty");
 		}
+
+		VariableRange range = order.range(variable);
+		int minVal = range.min();
+		int maxVal = range.max();
 
 		// Sort by low boundary.
 		List<Edge> sorted = new ArrayList<>(rawEdges);
@@ -115,7 +157,10 @@ public final class IDDFactory {
 		for (int i = 1; i < sorted.size(); i++) {
 			Edge next = sorted.get(i);
 
-			if (current.child() == next.child() && current.high() + 1L == next.low()) {
+			if (
+				current.child() == next.child() &&
+				current.high() + 1L == next.low()
+			) {
 				// Merge: extend the current interval.
 				current = new Edge(current.low(), next.high(), current.child());
 			} else {
@@ -128,7 +173,7 @@ public final class IDDFactory {
 
 		// Fill gaps with FALSE edges.
 		List<Edge> filled = new ArrayList<>();
-		int expectedLow = Integer.MIN_VALUE;
+		int expectedLow = minVal;
 
 		for (Edge e : merged) {
 			if (e.low() > expectedLow) {
@@ -138,19 +183,21 @@ public final class IDDFactory {
 			filled.add(e);
 			long nextLow = (long) e.high() + 1;
 
-			if (nextLow <= Integer.MAX_VALUE) {
+			if (nextLow <= maxVal) {
 				expectedLow = (int) nextLow;
 			} else {
-				expectedLow = Integer.MAX_VALUE;
+				expectedLow = maxVal;
 			}
 		}
 
 		// Add trailing FALSE edge if needed.
-		if (!filled.isEmpty() && filled.get(filled.size() - 1).high() < Integer.MAX_VALUE) {
+		if (
+			!filled.isEmpty() && filled.get(filled.size() - 1).high() < maxVal
+		) {
 			int trailingLow = filled.get(filled.size() - 1).high() + 1;
 
-			if (trailingLow <= Integer.MAX_VALUE) {
-				filled.add(new Edge(trailingLow, Integer.MAX_VALUE, IDD.FALSE));
+			if (trailingLow <= maxVal) {
+				filled.add(new Edge(trailingLow, maxVal, IDD.FALSE));
 			}
 		}
 
@@ -220,9 +267,14 @@ public final class IDDFactory {
 			}
 
 			for (int i = 0; i < this.edges.size(); i++) {
-				Edge a = this.edges.get(i), b = other.edges.get(i);
+				Edge a = this.edges.get(i),
+					b = other.edges.get(i);
 
-				if (a.low() != b.low() || a.high() != b.high() || a.child() != b.child()) {
+				if (
+					a.low() != b.low() ||
+					a.high() != b.high() ||
+					a.child() != b.child()
+				) {
 					return false;
 				}
 			}

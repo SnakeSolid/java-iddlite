@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.snake.collection.idd.util.VariableRange;
+
 /**
  * Maintains a fixed global variable order for the IDD.
  * <p>
@@ -16,13 +18,34 @@ public final class VariableOrder {
 
 	private final Map<String, Integer> indexBy;
 
+	private final Map<String, VariableRange> ranges;
+
 	public VariableOrder(String... varNames) {
+		this(Map.of(), varNames);
+	}
+
+	/**
+	 * Constructs a variable order with the given variable names and optional
+	 * ranges. Variables not present in the ranges map default to the full
+	 * integer range.
+	 *
+	 * @param ranges mapping from variable name to its valid range; may be empty
+	 * @param varNames the variable names in order
+	 * @throws IllegalArgumentException if a name is duplicated
+	 */
+	public VariableOrder(
+		Map<String, VariableRange> ranges,
+		String... varNames
+	) {
 		this.names = new ArrayList<>();
 		this.indexBy = new HashMap<>();
+		this.ranges = new HashMap<>(Map.copyOf(ranges));
 
 		for (String name : varNames) {
 			if (indexBy.containsKey(name)) {
-				throw new IllegalArgumentException("Duplicate variable: " + name);
+				throw new IllegalArgumentException(
+					"Duplicate variable: " + name
+				);
 			}
 
 			indexBy.put(name, names.size());
@@ -42,7 +65,9 @@ public final class VariableOrder {
 	 */
 	public String name(int index) {
 		if (index < 0 || index >= names.size()) {
-			throw new IllegalArgumentException("Variable index out of range: " + index);
+			throw new IllegalArgumentException(
+				"Variable index out of range: " + index
+			);
 		}
 
 		return names.get(index);
@@ -59,6 +84,43 @@ public final class VariableOrder {
 		}
 
 		return idx;
+	}
+
+	/**
+	 * Returns the valid range for the variable with the given name.
+	 * Variables without an explicit range default to the full integer range.
+	 *
+	 * @param name the variable name
+	 * @return the valid range for this variable
+	 * @throws IllegalArgumentException if the variable name is unknown
+	 */
+	public VariableRange range(String name) {
+		Integer idx = indexBy.get(name);
+
+		if (idx == null) {
+			throw new IllegalArgumentException("Unknown variable: " + name);
+		}
+
+		VariableRange r = ranges.get(name);
+
+		if (r == null) {
+			return VariableRange.fullRange();
+		}
+
+		return r;
+	}
+
+	/**
+	 * Returns the valid range for the variable at the given index.
+	 * Variables without an explicit range default to the full integer range.
+	 *
+	 * @param index the variable index
+	 * @return the valid range for this variable
+	 * @throws IllegalArgumentException if the index is out of range
+	 */
+	public VariableRange range(int index) {
+		String name = name(index);
+		return range(name);
 	}
 
 	/**

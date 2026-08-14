@@ -10,11 +10,12 @@ The project is a **multi-module Maven build**:
 
 ## Core design principles
 
-1. **Immutability** — all core classes (`IDD`, `Edge`, `Interval`, `VariableOrder`) are `final` and immutable.
+1. **Immutability** — all core classes (`IDD`, `Edge`, `Interval`, `VariableOrder`, `VariableRange`) are `final` and immutable.
 2. **Hash-consing** — the `IDDFactory` maintains a unique table (`WeakHashMap`) so structurally identical nodes share the same object identity.
-3. **Reduction** — nodes with a single edge covering the full domain (`MIN..MAX`) are eliminated, returning the child directly.
+3. **Reduction** — nodes with a single edge covering the full variable domain are eliminated, returning the child directly.
 4. **Canonical representation** — thanks to hash-consing + reduction, two IDDs represent the same function iff they are `==` (reference-equal).
-5. **Gap filling** — un-specified intervals default to FALSE, making the edge partition over the full integer domain.
+5. **Gap filling** — un-specified intervals default to FALSE, making the edge partition over the full variable domain.
+6. **Variable ranges** — each variable can have a custom valid range (e.g., `0..65535` for ports, `0..255` for protocols). Gap filling and reduction use these range boundaries instead of `Integer.MIN_VALUE..Integer.MAX_VALUE`.
 
 ## Component diagram
 
@@ -26,6 +27,7 @@ graph TD
         IDDFactory["IDDFactory"]
         IDDBuilder["IDDBuilder"]
         VariableOrder["VariableOrder"]
+        VariableRange["VariableRange"]
     end
 
     subgraph Operations
@@ -45,8 +47,9 @@ graph TD
     IDDFactory --> IDD
     IDDFactory --> Edge
     Edge --> IDD
-    Edge --> Interval
     IDDFactory --> VariableOrder
+    VariableOrder --> VariableRange
+    IDDFactory --> VariableRange
 
     Apply --> IDDFactory
     Apply --> IDD
@@ -72,8 +75,9 @@ Represents `[low, high] -> child`. Immutable. Edges are sorted and merged during
 
 Singleton-scoped factory that:
 - Normalises edge lists (sort, merge, fill gaps with FALSE).
-- Applies reduction (eliminate single-edge full-domain nodes).
+- Applies reduction (eliminate single-edge full-range nodes).
 - Hash-conses via a `WeakHashMap` unique table.
+- Validates that edges fall within the variable's valid range.
 
 The `WeakHashMap` allows unreachable nodes to be garbage-collected, making the factory safe for long-lived processes that create many temporary IDDs.
 
@@ -92,7 +96,11 @@ For multiple variables, it builds independent single-variable IDDs and ANDs them
 
 ### `VariableOrder` (core)
 
-Defines the fixed global ordering of variables. Lower index = higher in the diagram. Used by all operations to ensure canonical traversal.
+Defines the fixed global ordering of variables. Lower index = higher in the diagram. Used by all operations to ensure canonical traversal. Each variable can have an associated `VariableRange` that defines its valid value domain.
+
+### `VariableRange` (util)
+
+Represents the valid value range `[min, max]` for a variable. Default is the full integer range `[MIN_VALUE, MAX_VALUE]`. Specialized ranges (e.g., `0..65535` for ports) constrain gap-filling and reduction to the semantic domain of the variable.
 
 ## Operations
 
@@ -125,14 +133,36 @@ When `IDDFactory.getNode()` is called:
 
 ```mermaid
 flowchart LR
-    A["Raw edges"] --> B["Sort by low"]
-    B --> C["Merge adjacent same-child edges"]
-    C --> D["Fill gaps with FALSE"]
-    D --> E["Second merge pass"]
-    E --> F["Reduce single full-domain edge"]
-    F --> G["Hash-cons in unique table"]
-    G --> H["Returned IDD"]
+    A["Raw edges"] --> B["Validate against variable range"]
+    B --> C["Sort by low"]
+    C --> D["Merge adjacent same-child edges"]
+    D --> E["Fill gaps with FALSE\n(using variable's range min)"]
+    E --> F["Second merge pass"]
+    F --> G["Reduce single full-range edge"]
+    G --> H["Hash-cons in unique table"]
+    H --> I["Returned IDD"]
 ```
+
+## Variable ranges
+
+Each variable can have a custom valid range defined in the `VariableOrder`:
+
+```java
+Map<String, VariableRange> ranges = Map.of(
+    "port",  VariableRange.of(0, 65535),
+    "proto", VariableRange.of(0, 255)
+);
+VariableOrder order = new VariableOrder(ranges, "proto", "port");
+IDDFactory factory = new IDDFactory(order);
+```
+
+When a variable has a custom range:
+- **Gap filling** uses the range's `min` instead of `Integer.MIN_VALUE` for the leading FALSE edge.
+- **Gap filling** uses the range's `max` instead of `Integer.MAX_VALUE` for the trailing FALSE edge.
+- **Reduction** eliminates a node when a single edge covers the full custom range `[min, max]`.
+- **Validation** rejects edges whose bounds fall outside the variable's range.
+
+Variables without an explicit range default to the full integer range `[MIN_VALUE, MAX_VALUE]`, preserving backward compatibility.
 
 ## Thread safety
 

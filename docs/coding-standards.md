@@ -9,7 +9,7 @@
 
 | Element | Convention | Example |
 |---|---|---|
-| Classes | `PascalCase` | `IDD`, `IDDFactory`, `Apply` |
+| Classes | `PascalCase` | `IDD`, `IDDFactory`, `Apply`, `VariableRange` |
 | Methods / fields | `camelCase` | `getNode`, `uniqueTable`, `currentVarIndex` |
 | Constants | `UPPER_SNAKE_CASE` | `TRUE`, `FALSE` |
 | Package | lowercase, dot-separated | `ru.snake.collection.idd.core` |
@@ -69,6 +69,7 @@ All core classes are `final` with `private final` fields. No setters exist.
 | `IDD` | immutable |
 | `Edge` | immutable |
 | `Interval` | immutable |
+| `VariableRange` | immutable |
 | `VariableOrder` | immutable |
 | `IDDFactory` | mutable state (`uniqueTable`) |
 | `Apply` | mutable state (`cache`) |
@@ -144,7 +145,7 @@ public static boolean evaluate(IDD f, VariableOrder order, Map<String, Integer> 
 
 | Exception | When |
 |---|---|
-| `IllegalArgumentException` | Invalid arguments (`low > high`, variable < 0, empty edges, unknown variable name, out-of-range index) |
+| `IllegalArgumentException` | Invalid arguments (`low > high`, variable < 0, empty edges, unknown variable name, out-of-range index, edge outside variable's range) |
 | `NullPointerException` | Null child in `Edge`, or null `VariableOrder` in `IDDFactory` |
 | `IllegalStateException` | Internal invariant violated (e.g., no edge covers a value during evaluation) |
 
@@ -171,7 +172,7 @@ public boolean equals(Object o) {
 
 ### Other classes — structural equality
 
-`Edge`, `Interval`, `NodeKey`, `ApplyKey` implement structural `equals`/`hashCode` using `Objects.hash()` or the `31*h + field` pattern. Child references in `Edge` and `NodeKey` use `System.identityHashCode()` (reference-based) rather than structural hash, because `IDD` equality is by reference.
+`Edge`, `Interval`, `VariableRange`, `NodeKey`, `ApplyKey` implement structural `equals`/`hashCode` using `Objects.hash()` or the `31*h + field` pattern. Child references in `Edge` and `NodeKey` use `System.identityHashCode()` (reference-based) rather than structural hash, because `IDD` equality is by reference.
 
 ## Comments and Javadoc
 

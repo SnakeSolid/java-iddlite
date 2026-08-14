@@ -10,28 +10,31 @@
 ```
 src/test/java/ru/snake/collection/idd/
 ├── unit/               — Unit tests for individual components
-│   ├── IDDTest         — Node creation, hash-consing, reduction
+│   ├── VariableRangeTest — Valid range construction, singleton, contains, equality
+│   ├── IDDTest         — Node creation, hash-consing, reduction, range-aware gap filling
 │   ├── EdgeTest        — Edge invariants, equality, findEdge
-│   ├── ApplyTest       — Boolean operations, De Morgan, cross-variable AND
-│   ├── EvaluateTest    — Evaluation of terminals, intervals, multi-variable
-│   ├── QuantifyTest    — Exists, forall, non-present variables
-│   ├── RestrictTest    — Restrict terminals, correct child, recurse
-│   ├── BuilderTest     — Fluent builder, canonicity, empty builder
+│   ├── ApplyTest       — Boolean operations, De Morgan, cross-variable AND, ranged operations
+│   ├── EvaluateTest    — Evaluation of terminals, intervals, multi-variable, ranged evaluation
+│   ├── QuantifyTest    — Exists, forall, non-present variables, ranged quantification
+│   ├── RestrictTest    — Restrict terminals, correct child, recurse, ranged restriction
+│   ├── BuilderTest     — Fluent builder, canonicity, empty builder, ranged builder
 │   ├── IntervalTest    — Interval invariants, contains, adjacency
-│   └── VariableOrderTest — Order basics, duplicates, bounds, compare
+│   ├── IDDPrinterTest  — Print modes, formatters, tree output
+│   └── VariableOrderTest — Order basics, duplicates, bounds, compare, range lookup
 └── integration/        — Integration and stress tests
     ├── ExtremeIntervalTest — MIN/MAX boundary correctness
     ├── StressTest        — Large-scale firewall simulation
-    └── FirewallRuleTest  — 54-rule firewall with 5 variables
+    ├── FirewallRuleTest  — 54-rule firewall with 5 variables
+    └── RangedFirewallTest — Firewall with port/protocol ranges, quantify, restrict, performance
 ```
 
 ## Coverage summary
 
 | Category | Tests |
 |---|---|
-| **Unit tests** | 58 |
-| **Integration tests** | 14 |
-| **Total** | 72 |
+| **Unit tests** | 82 |
+| **Integration tests** | 20 |
+| **Total** | 102 |
 
 ## Testing patterns used
 
@@ -64,6 +67,15 @@ for (int v = 0; v <= 10; v++) {
 - `Integer.MIN_VALUE` and `Integer.MAX_VALUE` are exercised explicitly.
 - Single-value intervals at `MAX`.
 - Overflow-safe `nextLow()` calculation.
+
+### Variable range testing
+
+Tests with custom `VariableRange` verify:
+- **Gap filling** uses the variable's range boundaries instead of `Integer.MIN/MAX_VALUE`.
+- **Reduction** eliminates nodes when a single edge covers the full custom range.
+- **Edge validation** rejects edges that fall outside the variable's range.
+- **Hash-consing** works correctly with ranged variables.
+- **All operations** (AND, OR, NOT, XOR, IMPLIES, exists, forall, restrict) produce correct results with ranged variables.
 
 ## Running tests
 
