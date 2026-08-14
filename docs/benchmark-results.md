@@ -33,29 +33,29 @@ The benchmark lives in the `idd-benchmark` module and produces a standalone exec
 
 Each operation evaluates 1,000 packets. Higher is better.
 
-| Rule Count | Score    | Error  |
-|-----------|----------|--------|
-| 10        | 7.790    | ± 0.581 |
-| 30        | 7.293    | ± 0.251 |
-| 60        | 6.982    | ± 0.400 |
-| 120       | 7.074    | ± 0.290 |
-| 200       | 7.358    | ± 0.198 |
+| Rule Count | Score   | Error  |
+|-----------|---------|--------|
+| 10        | 7.736   | ± 0.138 |
+| 30        | 7.247   | ± 0.245 |
+| 60        | 7.450   | ± 0.339 |
+| 120       | 7.378   | ± 0.246 |
+| 200       | 7.354   | ± 0.358 |
 
 #### Average Time (ms/op)
 
 Lower is better.
 
-| Rule Count | Score   | Error   |
-|-----------|---------|---------|
-| 10        | 0.128   | ± 0.004 |
-| 30        | 0.141   | ± 0.007 |
-| 60        | 0.140   | ± 0.007 |
-| 120       | 0.143   | ± 0.014 |
-| 200       | 0.140   | ± 0.005 |
+| Rule Count | Score  | Error   |
+|-----------|--------|---------|
+| 10        | 0.132  | ± 0.006 |
+| 30        | 0.131  | ± 0.007 |
+| 60        | 0.133  | ± 0.007 |
+| 120       | 0.136  | ± 0.005 |
+| 200       | 0.135  | ± 0.005 |
 
 ### Interpretation
 
-Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.13–0.14 ms regardless of whether the firewall was compiled from 10 or 200 rules. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark).
+Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.13–0.14 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 7.2–7.7 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark).
 
 ### Running benchmarks
 
