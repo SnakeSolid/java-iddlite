@@ -7,7 +7,7 @@ import java.util.Objects;
  * An Interval Decision Diagram (IDD) node.
  * <p>
  * Immutable, hash-consed, and reduced. Nodes are only created via
- * {@link ru.snake.collection.idd.factory.IDDFactory}.
+ * {@link IDDFactory}.
  * <p>
  * Terminal nodes (TRUE/FALSE) have variable == -1 and an empty edge list.
  */

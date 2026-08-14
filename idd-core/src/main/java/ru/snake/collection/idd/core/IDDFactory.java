@@ -84,7 +84,7 @@ public final class IDDFactory {
 	 * @param rawEdges the edges for this node
 	 * @return the constructed or cached IDD node
 	 * @throws IllegalArgumentException if any edge is outside the variable's
-	 *         valid range
+	 *                                      valid range
 	 */
 	public IDD getNode(int variable, List<Edge> rawEdges) {
 		VariableRange range = order.range(variable);
@@ -93,16 +93,8 @@ public final class IDDFactory {
 		for (Edge e : rawEdges) {
 			if (e.low() < range.min() || e.high() > range.max()) {
 				throw new IllegalArgumentException(
-					"Edge [" +
-						e.low() +
-						"," +
-						e.high() +
-						"] out of range [" +
-						range.min() +
-						"," +
-						range.max() +
-						"] for variable " +
-						variable
+					"Edge [" + e.low() + "," + e.high() + "] out of range [" + range.min() + "," + range.max()
+							+ "] for variable " + variable
 				);
 			}
 		}
@@ -120,9 +112,7 @@ public final class IDDFactory {
 		}
 
 		NodeKey key = new NodeKey(variable, normalised);
-		return uniqueTable.computeIfAbsent(key, k ->
-			new IDD(variable, normalised)
-		);
+		return uniqueTable.computeIfAbsent(key, k -> new IDD(variable, normalised));
 	}
 
 	/**
@@ -157,10 +147,7 @@ public final class IDDFactory {
 		for (int i = 1; i < sorted.size(); i++) {
 			Edge next = sorted.get(i);
 
-			if (
-				current.child() == next.child() &&
-				current.high() + 1L == next.low()
-			) {
+			if (current.child() == next.child() && current.high() + 1L == next.low()) {
 				// Merge: extend the current interval.
 				current = new Edge(current.low(), next.high(), current.child());
 			} else {
@@ -191,9 +178,7 @@ public final class IDDFactory {
 		}
 
 		// Add trailing FALSE edge if needed.
-		if (
-			!filled.isEmpty() && filled.get(filled.size() - 1).high() < maxVal
-		) {
+		if (!filled.isEmpty() && filled.get(filled.size() - 1).high() < maxVal) {
 			int trailingLow = filled.get(filled.size() - 1).high() + 1;
 
 			if (trailingLow <= maxVal) {
@@ -267,14 +252,9 @@ public final class IDDFactory {
 			}
 
 			for (int i = 0; i < this.edges.size(); i++) {
-				Edge a = this.edges.get(i),
-					b = other.edges.get(i);
+				Edge a = this.edges.get(i), b = other.edges.get(i);
 
-				if (
-					a.low() != b.low() ||
-					a.high() != b.high() ||
-					a.child() != b.child()
-				) {
+				if (a.low() != b.low() || a.high() != b.high() || a.child() != b.child()) {
 					return false;
 				}
 			}

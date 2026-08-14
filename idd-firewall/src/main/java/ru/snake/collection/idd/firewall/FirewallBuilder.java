@@ -1,6 +1,7 @@
 package ru.snake.collection.idd.firewall;
 
 import java.util.List;
+
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
@@ -84,26 +85,10 @@ public final class FirewallBuilder {
 	 */
 	private IDD buildRuleIdd(FirewallRule rule) {
 		IDD result = buildVarIdd(FirewallVars.SRC_IP, rule.srcIp());
-		result = Apply.and(
-			factory,
-			result,
-			buildVarIdd(FirewallVars.DST_IP, rule.dstIp())
-		);
-		result = Apply.and(
-			factory,
-			result,
-			buildVarIdd(FirewallVars.SRC_PORT, rule.srcPort())
-		);
-		result = Apply.and(
-			factory,
-			result,
-			buildVarIdd(FirewallVars.DST_PORT, rule.dstPort())
-		);
-		result = Apply.and(
-			factory,
-			result,
-			buildVarIdd(FirewallVars.PROTO, rule.proto())
-		);
+		result = Apply.and(factory, result, buildVarIdd(FirewallVars.DST_IP, rule.dstIp()));
+		result = Apply.and(factory, result, buildVarIdd(FirewallVars.SRC_PORT, rule.srcPort()));
+		result = Apply.and(factory, result, buildVarIdd(FirewallVars.DST_PORT, rule.dstPort()));
+		result = Apply.and(factory, result, buildVarIdd(FirewallVars.PROTO, rule.proto()));
 		return result;
 	}
 
@@ -112,50 +97,28 @@ public final class FirewallBuilder {
 	 * TRUE (matches all values). Otherwise builds a single-edge node covering
 	 * the constraint's interval.
 	 */
-	private IDD buildVarIdd(
-		String varName,
-		FirewallRule.Constraint constraint
-	) {
+	private IDD buildVarIdd(String varName, FirewallRule.Constraint constraint) {
 		if (constraint == null) {
 			return factory.trueNode();
 		}
 
-		// IP constraints may cross the signed 32-bit boundary, producing low > high.
+		// IP constraints may cross the signed 32-bit boundary, producing low >
+		// high.
 		// Split into two edges: [low..MAX_VALUE] and [MIN_VALUE..high].
 		if (constraint.low() > constraint.high()) {
 			IDD upper = factory.buildFromIntervals(
 				varName,
-				List.of(
-					new Edge(
-						constraint.low(),
-						Integer.MAX_VALUE,
-						factory.trueNode()
-					)
-				)
+				List.of(new Edge(constraint.low(), Integer.MAX_VALUE, factory.trueNode()))
 			);
 			IDD lower = factory.buildFromIntervals(
 				varName,
-				List.of(
-					new Edge(
-						Integer.MIN_VALUE,
-						constraint.high(),
-						factory.trueNode()
-					)
-				)
+				List.of(new Edge(Integer.MIN_VALUE, constraint.high(), factory.trueNode()))
 			);
 			return Apply.or(factory, upper, lower);
 		}
 
-		return factory.buildFromIntervals(
-			varName,
-			List.of(
-				new Edge(
-					constraint.low(),
-					constraint.high(),
-					factory.trueNode()
-				)
-			)
-		);
+		return factory
+			.buildFromIntervals(varName, List.of(new Edge(constraint.low(), constraint.high(), factory.trueNode())));
 	}
 
 	/**

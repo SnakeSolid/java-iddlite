@@ -44,19 +44,13 @@ import java.util.regex.Pattern;
 public final class FirewallParser {
 
 	/** Protocol name to number mapping. */
-	private static final Map<String, Integer> PROTO_MAP = Map.of(
-		"tcp",
-		6,
-		"udp",
-		17,
-		"icmp",
-		1
-	);
+	private static final Map<String, Integer> PROTO_MAP = Map.of("tcp", 6, "udp", 17, "icmp", 1);
 
 	/** Pattern for a key=value token. */
 	private static final Pattern KV_PATTERN = Pattern.compile("([a-z_]+)=(.+)");
 
-	private FirewallParser() {}
+	private FirewallParser() {
+	}
 
 	/**
 	 * Parses all rules from the given reader.
@@ -96,9 +90,7 @@ public final class FirewallParser {
 		FirewallRule.Action action = parseAction(tokens[0]);
 
 		if (tokens.length < 2) {
-			throw new IllegalArgumentException(
-				"Rule missing constraints: " + line
-			);
+			throw new IllegalArgumentException("Rule missing constraints: " + line);
 		}
 
 		// Parse constraints from tokens.
@@ -118,44 +110,30 @@ public final class FirewallParser {
 
 			Matcher m = KV_PATTERN.matcher(token);
 			if (!m.matches()) {
-				throw new IllegalArgumentException(
-					"Invalid rule token: '" + token + "' in: " + line
-				);
+				throw new IllegalArgumentException("Invalid rule token: '" + token + "' in: " + line);
 			}
 
 			String key = m.group(1);
 			String value = m.group(2);
 
 			switch (key) {
-				case "src_ip" -> srcIp = parseIpConstraint(value);
-				case "dst_ip" -> dstIp = parseIpConstraint(value);
-				case "src_port" -> srcPort = parsePortConstraint(value);
-				case "dst_port" -> dstPort = parsePortConstraint(value);
-				case "proto" -> proto = parseProtoConstraint(value);
-				default -> throw new IllegalArgumentException(
-					"Unknown field: " + key + " in: " + line
-				);
+			case "src_ip" -> srcIp = parseIpConstraint(value);
+			case "dst_ip" -> dstIp = parseIpConstraint(value);
+			case "src_port" -> srcPort = parsePortConstraint(value);
+			case "dst_port" -> dstPort = parsePortConstraint(value);
+			case "proto" -> proto = parseProtoConstraint(value);
+			default -> throw new IllegalArgumentException("Unknown field: " + key + " in: " + line);
 			}
 		}
 
-		return new FirewallRule(
-			action,
-			sequence,
-			srcIp,
-			dstIp,
-			srcPort,
-			dstPort,
-			proto
-		);
+		return new FirewallRule(action, sequence, srcIp, dstIp, srcPort, dstPort, proto);
 	}
 
 	private static FirewallRule.Action parseAction(String token) {
 		return switch (token.toUpperCase()) {
-			case "ACCEPT" -> FirewallRule.Action.ACCEPT;
-			case "DROP" -> FirewallRule.Action.DROP;
-			default -> throw new IllegalArgumentException(
-				"Unknown action: " + token + " (expected ACCEPT or DROP)"
-			);
+		case "ACCEPT" -> FirewallRule.Action.ACCEPT;
+		case "DROP" -> FirewallRule.Action.DROP;
+		default -> throw new IllegalArgumentException("Unknown action: " + token + " (expected ACCEPT or DROP)");
 		};
 	}
 
@@ -186,9 +164,7 @@ public final class FirewallParser {
 			validatePort(high, "port range");
 
 			if (low > high) {
-				throw new IllegalArgumentException(
-					"Invalid port range: " + low + "-" + high
-				);
+				throw new IllegalArgumentException("Invalid port range: " + low + "-" + high);
 			}
 
 			return new FirewallRule.Constraint(low, high);
@@ -201,9 +177,7 @@ public final class FirewallParser {
 
 	private static void validatePort(int port, String context) {
 		if (port < FirewallVars.PORT_MIN || port > FirewallVars.PORT_MAX) {
-			throw new IllegalArgumentException(
-				"Port out of range in " + context + ": " + port
-			);
+			throw new IllegalArgumentException("Port out of range in " + context + ": " + port);
 		}
 	}
 
@@ -222,17 +196,13 @@ public final class FirewallParser {
 			proto = Integer.parseInt(value);
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException(
-				"Invalid protocol: '" +
-					value +
-					"' (expected a number or tcp/udp/icmp/any)",
+				"Invalid protocol: '" + value + "' (expected a number or tcp/udp/icmp/any)",
 				e
 			);
 		}
 
 		if (proto < FirewallVars.PROTO_MIN || proto > FirewallVars.PROTO_MAX) {
-			throw new IllegalArgumentException(
-				"Protocol out of range: " + proto
-			);
+			throw new IllegalArgumentException("Protocol out of range: " + proto);
 		}
 
 		return new FirewallRule.Constraint(proto, proto);

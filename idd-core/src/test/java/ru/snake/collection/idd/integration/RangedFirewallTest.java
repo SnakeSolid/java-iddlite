@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
@@ -34,28 +36,14 @@ class RangedFirewallTest {
 			"proto",
 			VariableRange.of(0, 255)
 		);
-		VariableOrder order = new VariableOrder(
-			ranges,
-			"proto",
-			"src_port",
-			"dst_port"
-		);
+		VariableOrder order = new VariableOrder(ranges, "proto", "src_port", "dst_port");
 		IDDFactory factory = new IDDFactory(order);
 
 		// Rule 1: TCP (6) to port 80
-		IDD rule1 = factory
-			.builder()
-			.when("proto")
-			.in(6, 6)
-			.then(true)
-			.when("dst_port")
-			.in(80, 80)
-			.then(true)
-			.build();
+		IDD rule1 = factory.builder().when("proto").in(6, 6).then(true).when("dst_port").in(80, 80).then(true).build();
 
 		// Rule 2: TCP to port 443
-		IDD rule2 = factory
-			.builder()
+		IDD rule2 = factory.builder()
 			.when("proto")
 			.in(6, 6)
 			.then(true)
@@ -65,8 +53,7 @@ class RangedFirewallTest {
 			.build();
 
 		// Rule 3: UDP (17) to ports 53 (DNS)
-		IDD rule3 = factory
-			.builder()
+		IDD rule3 = factory.builder()
 			.when("proto")
 			.in(17, 17)
 			.then(true)
@@ -79,129 +66,59 @@ class RangedFirewallTest {
 		IDD policy = Apply.or(factory, Apply.or(factory, rule1, rule2), rule3);
 
 		// TCP to port 80 should be accepted
-		assertTrue(
-			Evaluate.evaluate(
-				policy,
-				order,
-				Map.of("proto", 6, "src_port", 12345, "dst_port", 80)
-			)
-		);
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "src_port", 12345, "dst_port", 80)));
 
 		// TCP to port 443 should be accepted
-		assertTrue(
-			Evaluate.evaluate(
-				policy,
-				order,
-				Map.of("proto", 6, "src_port", 54321, "dst_port", 443)
-			)
-		);
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "src_port", 54321, "dst_port", 443)));
 
 		// UDP to port 53 should be accepted
-		assertTrue(
-			Evaluate.evaluate(
-				policy,
-				order,
-				Map.of("proto", 17, "src_port", 9999, "dst_port", 53)
-			)
-		);
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 17, "src_port", 9999, "dst_port", 53)));
 
 		// TCP to port 8080 should be rejected
-		assertFalse(
-			Evaluate.evaluate(
-				policy,
-				order,
-				Map.of("proto", 6, "src_port", 12345, "dst_port", 8080)
-			)
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 6, "src_port", 12345, "dst_port", 8080)));
 
 		// UDP to port 80 should be rejected
-		assertFalse(
-			Evaluate.evaluate(
-				policy,
-				order,
-				Map.of("proto", 17, "src_port", 12345, "dst_port", 80)
-			)
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 17, "src_port", 12345, "dst_port", 80)));
 
 		// ICMP (1) should be rejected
-		assertFalse(
-			Evaluate.evaluate(
-				policy,
-				order,
-				Map.of("proto", 1, "src_port", 0, "dst_port", 0)
-			)
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 1, "src_port", 0, "dst_port", 0)));
 	}
 
 	@Test
 	@DisplayName("Restrict fixes a variable and simplifies the diagram")
 	void testRestrictRangedFirewall() {
-		Map<String, VariableRange> ranges = Map.of(
-			"port",
-			VariableRange.of(0, 65535),
-			"proto",
-			VariableRange.of(0, 255)
-		);
+		Map<String, VariableRange> ranges = Map
+			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
 		VariableOrder order = new VariableOrder(ranges, "proto", "port");
 		IDDFactory factory = new IDDFactory(order);
 
-		IDD policy = factory
-			.builder()
-			.when("proto")
-			.in(6, 6)
-			.then(true)
-			.when("port")
-			.in(80, 443)
-			.then(true)
-			.build();
+		IDD policy = factory.builder().when("proto").in(6, 6).then(true).when("port").in(80, 443).then(true).build();
 
 		// Restrict proto=6 => should simplify to port-based rule
 		IDD restricted = Restrict.restrict(factory, policy, "proto", 6);
 
 		// After restricting proto=6, the policy depends only on port.
-		assertTrue(
-			Evaluate.evaluate(restricted, order, Map.of("proto", 6, "port", 80))
-		);
-		assertFalse(
-			Evaluate.evaluate(
-				restricted,
-				order,
-				Map.of("proto", 6, "port", 8080)
-			)
-		);
+		assertTrue(Evaluate.evaluate(restricted, order, Map.of("proto", 6, "port", 80)));
+		assertFalse(Evaluate.evaluate(restricted, order, Map.of("proto", 6, "port", 8080)));
 	}
 
 	@Test
 	@DisplayName("Quantify eliminates a ranged variable correctly")
 	void testQuantifyRangedVariable() {
-		Map<String, VariableRange> ranges = Map.of(
-			"port",
-			VariableRange.of(0, 65535),
-			"proto",
-			VariableRange.of(0, 255)
-		);
+		Map<String, VariableRange> ranges = Map
+			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
 		VariableOrder order = new VariableOrder(ranges, "proto", "port");
 		IDDFactory factory = new IDDFactory(order);
 
 		// f = (proto in [6,6]) AND (port in [80,443])
-		IDD protoPart = factory.buildFromIntervals(
-			"proto",
-			List.of(new Edge(6, 6, factory.trueNode()))
-		);
-		IDD portPart = factory.buildFromIntervals(
-			"port",
-			List.of(new Edge(80, 443, factory.trueNode()))
-		);
+		IDD protoPart = factory.buildFromIntervals("proto", List.of(new Edge(6, 6, factory.trueNode())));
+		IDD portPart = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
 		IDD f = Apply.and(factory, protoPart, portPart);
 
 		// exists port. f => proto in [6,6]
 		IDD existsPort = Quantify.exists(factory, f, "port");
-		assertTrue(
-			Evaluate.evaluate(existsPort, order, Map.of("proto", 6, "port", 0))
-		);
-		assertFalse(
-			Evaluate.evaluate(existsPort, order, Map.of("proto", 17, "port", 0))
-		);
+		assertTrue(Evaluate.evaluate(existsPort, order, Map.of("proto", 6, "port", 0)));
+		assertFalse(Evaluate.evaluate(existsPort, order, Map.of("proto", 17, "port", 0)));
 
 		// forall port. f => FALSE (because not all ports are in [80,443])
 		IDD forallPort = Quantify.forall(factory, f, "port");
@@ -211,17 +128,11 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("NOT and OR complement with custom ranges")
 	void testComplementWithCustomRanges() {
-		Map<String, VariableRange> ranges = Map.of(
-			"port",
-			VariableRange.of(0, 65535)
-		);
+		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
 		VariableOrder order = new VariableOrder(ranges, "port");
 		IDDFactory factory = new IDDFactory(order);
 
-		IDD f = factory.buildFromIntervals(
-			"port",
-			List.of(new Edge(80, 443, factory.trueNode()))
-		);
+		IDD f = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
 		IDD notF = Apply.not(factory, f);
 		IDD tautology = Apply.or(factory, f, notF);
 
@@ -232,18 +143,12 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Single-value variable range")
 	void testSingleValueRange() {
-		Map<String, VariableRange> ranges = Map.of(
-			"flag",
-			VariableRange.of(0, 1)
-		);
+		Map<String, VariableRange> ranges = Map.of("flag", VariableRange.of(0, 1));
 		VariableOrder order = new VariableOrder(ranges, "flag");
 		IDDFactory factory = new IDDFactory(order);
 
 		// Flag is TRUE only when it equals 1.
-		IDD f = factory.buildFromIntervals(
-			"flag",
-			List.of(new Edge(1, 1, factory.trueNode()))
-		);
+		IDD f = factory.buildFromIntervals("flag", List.of(new Edge(1, 1, factory.trueNode())));
 
 		assertFalse(Evaluate.evaluate(f, order, Map.of("flag", 0)));
 		assertTrue(Evaluate.evaluate(f, order, Map.of("flag", 1)));
@@ -258,87 +163,45 @@ class RangedFirewallTest {
 	}
 
 	@Test
-	@DisplayName(
-		"Deterministic evaluation with ranged variables covers the full range"
-	)
+	@DisplayName("Deterministic evaluation with ranged variables covers the full range")
 	void testDeterministicRangedEvaluations() {
-		Map<String, VariableRange> ranges = Map.of(
-			"port",
-			VariableRange.of(0, 65535),
-			"proto",
-			VariableRange.of(0, 255)
-		);
+		Map<String, VariableRange> ranges = Map
+			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
 		VariableOrder order = new VariableOrder(ranges, "proto", "port");
 		IDDFactory factory = new IDDFactory(order);
 
 		// Build a port-only rule: accept ports 80-443
-		IDD portRule = factory.buildFromIntervals(
-			"port",
-			List.of(new Edge(80, 443, factory.trueNode()))
-		);
+		IDD portRule = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
 		// Build a proto-only rule: accept protocols 6, 17
-		IDD protoRule = factory.buildFromIntervals(
-			"proto",
-			List.of(new Edge(6, 17, factory.trueNode()))
-		);
+		IDD protoRule = factory.buildFromIntervals("proto", List.of(new Edge(6, 17, factory.trueNode())));
 		// AND them: accept when BOTH conditions are met
 		IDD policy = Apply.and(factory, portRule, protoRule);
 
 		// Test specific points in the space.
 		// Port in range AND proto in range => TRUE
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 80))
-		);
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 17, "port", 443))
-		);
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 12, "port", 200))
-		);
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 80)));
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 17, "port", 443)));
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 12, "port", 200)));
 
 		// Port in range but proto out => FALSE
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 0, "port", 80))
-		);
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 255, "port", 443))
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 0, "port", 80)));
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 255, "port", 443)));
 
 		// Proto in range but port out => FALSE
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 0))
-		);
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 17, "port", 65535))
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 0)));
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 17, "port", 65535)));
 
 		// Boundary of port range
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 79))
-		);
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 80))
-		);
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 443))
-		);
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 444))
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 79)));
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 80)));
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 443)));
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 444)));
 
 		// Boundary of proto range
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 5, "port", 80))
-		);
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 80))
-		);
-		assertTrue(
-			Evaluate.evaluate(policy, order, Map.of("proto", 17, "port", 80))
-		);
-		assertFalse(
-			Evaluate.evaluate(policy, order, Map.of("proto", 18, "port", 80))
-		);
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 5, "port", 80)));
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "port", 80)));
+		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 17, "port", 80)));
+		assertFalse(Evaluate.evaluate(policy, order, Map.of("proto", 18, "port", 80)));
 
 		// Stress: sweep a range of values.
 		for (int proto = 0; proto <= 255; proto++) {
@@ -348,11 +211,7 @@ class RangedFirewallTest {
 				boolean expected = inProto && inPort;
 				assertEquals(
 					expected,
-					Evaluate.evaluate(
-						policy,
-						order,
-						Map.of("proto", proto, "port", port)
-					),
+					Evaluate.evaluate(policy, order, Map.of("proto", proto, "port", port)),
 					"Mismatch at proto=" + proto + ", port=" + port
 				);
 			}
@@ -370,20 +229,14 @@ class RangedFirewallTest {
 			"proto",
 			VariableRange.of(0, 255)
 		);
-		VariableOrder order = new VariableOrder(
-			ranges,
-			"proto",
-			"src_port",
-			"dst_port"
-		);
+		VariableOrder order = new VariableOrder(ranges, "proto", "src_port", "dst_port");
 		IDDFactory factory = new IDDFactory(order);
 
 		// Build a realistic-ish policy with multiple rules.
 		IDD policy = factory.falseNode();
 
 		// Allow TCP to common web ports
-		IDD webRule = factory
-			.builder()
+		IDD webRule = factory.builder()
 			.when("proto")
 			.in(6, 6)
 			.then(true)
@@ -394,8 +247,7 @@ class RangedFirewallTest {
 		policy = Apply.or(factory, policy, webRule);
 
 		// Allow UDP DNS
-		IDD dnsRule = factory
-			.builder()
+		IDD dnsRule = factory.builder()
 			.when("proto")
 			.in(17, 17)
 			.then(true)
@@ -406,8 +258,7 @@ class RangedFirewallTest {
 		policy = Apply.or(factory, policy, dnsRule);
 
 		// Allow TCP SSH
-		IDD sshRule = factory
-			.builder()
+		IDD sshRule = factory.builder()
 			.when("proto")
 			.in(6, 6)
 			.then(true)
@@ -437,9 +288,6 @@ class RangedFirewallTest {
 		assertTrue(accepted > 0, "Should accept some packets");
 		assertTrue(accepted < 50000, "Should reject some packets");
 		// Should complete well within 30 seconds.
-		assertTrue(
-			elapsed < 30000,
-			"Should complete in under 30s, took " + elapsed + "ms"
-		);
+		assertTrue(elapsed < 30000, "Should complete in under 30s, took " + elapsed + "ms");
 	}
 }

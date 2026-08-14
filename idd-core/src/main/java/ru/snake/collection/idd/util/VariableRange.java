@@ -5,9 +5,9 @@ import java.util.Objects;
 /**
  * Represents the valid value range for a variable in an IDD.
  * <p>
- * Default is the full integer range {@code [MIN_VALUE, MAX_VALUE]}.
- * Specialized ranges constrain gap-filling and reduction to the
- * semantic domain of the variable (e.g., ports: 0..65535).
+ * Default is the full integer range {@code [MIN_VALUE, MAX_VALUE]}. Specialized
+ * ranges constrain gap-filling and reduction to the semantic domain of the
+ * variable (e.g., ports: 0..65535).
  * <p>
  * Immutable and thread-safe.
  */
@@ -20,8 +20,7 @@ public final class VariableRange {
 	private final int max;
 
 	/** Cached full-range instance. */
-	private static final VariableRange FULL_RANGE = new VariableRange(
-		Integer.MIN_VALUE, Integer.MAX_VALUE);
+	private static final VariableRange FULL_RANGE = new VariableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
 
 	/**
 	 * Constructs a range with the given bounds.
@@ -32,8 +31,7 @@ public final class VariableRange {
 	 */
 	public VariableRange(int min, int max) {
 		if (min > max) {
-			throw new IllegalArgumentException(
-				"min (" + min + ") > max (" + max + ")");
+			throw new IllegalArgumentException("min (" + min + ") > max (" + max + ")");
 		}
 
 		this.min = min;

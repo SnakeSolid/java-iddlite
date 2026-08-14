@@ -29,23 +29,19 @@ public final class VariableOrder {
 	 * ranges. Variables not present in the ranges map default to the full
 	 * integer range.
 	 *
-	 * @param ranges mapping from variable name to its valid range; may be empty
+	 * @param ranges   mapping from variable name to its valid range; may be
+	 *                     empty
 	 * @param varNames the variable names in order
 	 * @throws IllegalArgumentException if a name is duplicated
 	 */
-	public VariableOrder(
-		Map<String, VariableRange> ranges,
-		String... varNames
-	) {
+	public VariableOrder(Map<String, VariableRange> ranges, String... varNames) {
 		this.names = new ArrayList<>();
 		this.indexBy = new HashMap<>();
 		this.ranges = new HashMap<>(Map.copyOf(ranges));
 
 		for (String name : varNames) {
 			if (indexBy.containsKey(name)) {
-				throw new IllegalArgumentException(
-					"Duplicate variable: " + name
-				);
+				throw new IllegalArgumentException("Duplicate variable: " + name);
 			}
 
 			indexBy.put(name, names.size());
@@ -65,9 +61,7 @@ public final class VariableOrder {
 	 */
 	public String name(int index) {
 		if (index < 0 || index >= names.size()) {
-			throw new IllegalArgumentException(
-				"Variable index out of range: " + index
-			);
+			throw new IllegalArgumentException("Variable index out of range: " + index);
 		}
 
 		return names.get(index);
@@ -87,8 +81,8 @@ public final class VariableOrder {
 	}
 
 	/**
-	 * Returns the valid range for the variable with the given name.
-	 * Variables without an explicit range default to the full integer range.
+	 * Returns the valid range for the variable with the given name. Variables
+	 * without an explicit range default to the full integer range.
 	 *
 	 * @param name the variable name
 	 * @return the valid range for this variable
@@ -111,8 +105,8 @@ public final class VariableOrder {
 	}
 
 	/**
-	 * Returns the valid range for the variable at the given index.
-	 * Variables without an explicit range default to the full integer range.
+	 * Returns the valid range for the variable at the given index. Variables
+	 * without an explicit range default to the full integer range.
 	 *
 	 * @param index the variable index
 	 * @return the valid range for this variable

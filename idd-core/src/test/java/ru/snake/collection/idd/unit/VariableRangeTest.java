@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import ru.snake.collection.idd.util.VariableRange;
 
 class VariableRangeTest {
@@ -38,9 +39,7 @@ class VariableRangeTest {
 	@Test
 	@DisplayName("rejects min > max")
 	void testRejectsInvertedRange() {
-		assertThrows(IllegalArgumentException.class, () ->
-			new VariableRange(10, 5)
-		);
+		assertThrows(IllegalArgumentException.class, () -> new VariableRange(10, 5));
 	}
 
 	@Test
@@ -87,10 +86,7 @@ class VariableRangeTest {
 	@Test
 	@DisplayName("contains works at MIN_VALUE and MAX_VALUE boundaries")
 	void testContainsExtremeBoundaries() {
-		VariableRange range = VariableRange.of(
-			Integer.MIN_VALUE,
-			Integer.MAX_VALUE
-		);
+		VariableRange range = VariableRange.of(Integer.MIN_VALUE, Integer.MAX_VALUE);
 		assertTrue(range.contains(Integer.MIN_VALUE));
 		assertTrue(range.contains(Integer.MAX_VALUE));
 		assertTrue(range.contains(0));
@@ -99,10 +95,7 @@ class VariableRangeTest {
 	@Test
 	@DisplayName("of with full range equals fullRange singleton")
 	void testOfFullRangeEqualsSingleton() {
-		VariableRange full = VariableRange.of(
-			Integer.MIN_VALUE,
-			Integer.MAX_VALUE
-		);
+		VariableRange full = VariableRange.of(Integer.MIN_VALUE, Integer.MAX_VALUE);
 		assertEquals(VariableRange.fullRange(), full);
 		assertEquals(VariableRange.fullRange().hashCode(), full.hashCode());
 	}

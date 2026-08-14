@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.util.VariableRange;
 
@@ -33,9 +35,7 @@ class VariableOrderTest {
 	@Test
 	@DisplayName("Variable order rejects duplicate names")
 	void testRejectsDuplicates() {
-		assertThrows(IllegalArgumentException.class, () ->
-			new VariableOrder("x", "x")
-		);
+		assertThrows(IllegalArgumentException.class, () -> new VariableOrder("x", "x"));
 	}
 
 	@Test
@@ -81,12 +81,8 @@ class VariableOrderTest {
 	@Test
 	@DisplayName("custom ranges are returned by name")
 	void testCustomRangeByName() {
-		Map<String, VariableRange> ranges = Map.of(
-			"port",
-			VariableRange.of(0, 65535),
-			"proto",
-			VariableRange.of(0, 255)
-		);
+		Map<String, VariableRange> ranges = Map
+			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
 		VariableOrder order = new VariableOrder(ranges, "port", "proto");
 		assertEquals(VariableRange.of(0, 65535), order.range("port"));
 		assertEquals(VariableRange.of(0, 255), order.range("proto"));
@@ -95,10 +91,7 @@ class VariableOrderTest {
 	@Test
 	@DisplayName("custom ranges are returned by index")
 	void testCustomRangeByIndex() {
-		Map<String, VariableRange> ranges = Map.of(
-			"port",
-			VariableRange.of(0, 65535)
-		);
+		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
 		VariableOrder order = new VariableOrder(ranges, "port", "proto");
 		assertEquals(VariableRange.of(0, 65535), order.range(0));
 		assertEquals(VariableRange.fullRange(), order.range(1));

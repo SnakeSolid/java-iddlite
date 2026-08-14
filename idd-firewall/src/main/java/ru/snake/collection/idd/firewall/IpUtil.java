@@ -10,7 +10,8 @@ import java.util.List;
  */
 public final class IpUtil {
 
-	private IpUtil() {}
+	private IpUtil() {
+	}
 
 	/**
 	 * Parses a dotted-quad IPv4 address string to a signed 32-bit int.
@@ -29,9 +30,7 @@ public final class IpUtil {
 		for (String part : parts) {
 			int octet = Integer.parseInt(part);
 			if (octet < 0 || octet > 255) {
-				throw new IllegalArgumentException(
-					"Invalid octet in IP address " + addr + ": " + octet
-				);
+				throw new IllegalArgumentException("Invalid octet in IP address " + addr + ": " + octet);
 			}
 
 			result = (result << 8) | (octet & 0xFF);
@@ -53,9 +52,7 @@ public final class IpUtil {
 		int prefix = Integer.parseInt(parts[1]);
 
 		if (prefix < 0 || prefix > 32) {
-			throw new IllegalArgumentException(
-				"Invalid CIDR prefix: " + prefix
-			);
+			throw new IllegalArgumentException("Invalid CIDR prefix: " + prefix);
 		}
 
 		if (prefix == 0) {
@@ -95,7 +92,8 @@ public final class IpUtil {
 	 * {@code [network, MAX_VALUE]} and {@code [MIN_VALUE, broadcast]}.
 	 *
 	 * @param cidr the CIDR string (e.g. "10.0.0.0/8")
-	 * @return int array of [network, broadcast] — may wrap around signed boundary
+	 * @return int array of [network, broadcast] — may wrap around signed
+	 *         boundary
 	 */
 	public static int[] cidrRange(String cidr) {
 		return new int[] { cidrNetwork(cidr), cidrBroadcast(cidr) };
@@ -105,8 +103,8 @@ public final class IpUtil {
 	 * Returns one or two signed-int intervals for a CIDR prefix.
 	 * <p>
 	 * When the broadcast address has its high bit set and the network does not,
-	 * the range wraps around the signed int boundary and must be split into
-	 * two intervals so that each interval satisfies {@code low <= high}.
+	 * the range wraps around the signed int boundary and must be split into two
+	 * intervals so that each interval satisfies {@code low <= high}.
 	 *
 	 * @param cidr the CIDR string
 	 * @return list of int arrays, each {@code [low, high]}
@@ -120,9 +118,6 @@ public final class IpUtil {
 		}
 
 		// Range crosses the signed boundary — split into two intervals.
-		return List.of(
-			new int[] { network, Integer.MAX_VALUE },
-			new int[] { Integer.MIN_VALUE, broadcast }
-		);
+		return List.of(new int[] { network, Integer.MAX_VALUE }, new int[] { Integer.MIN_VALUE, broadcast });
 	}
 }
