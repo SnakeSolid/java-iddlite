@@ -1,6 +1,5 @@
 package ru.snake.collection.idd.benchmark;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -24,9 +23,6 @@ import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
-import ru.snake.collection.idd.util.Formatters;
-import ru.snake.collection.idd.util.IDDPrinter;
-import ru.snake.collection.idd.util.ValueFormatter;
 import ru.snake.collection.idd.util.VariableRange;
 
 /**
@@ -312,31 +308,6 @@ public class FirewallEvaluationBenchmark {
 		}
 
 		return firewall;
-	}
-
-	public static void main(String[] args) throws IOException {
-		FirewallEvaluationBenchmark firewall = new FirewallEvaluationBenchmark();
-		firewall.order = new VariableOrder(
-			Map.ofEntries(
-				Map.entry(VAR_SRC_PORT, VariableRange.of(0, 65535)),
-				Map.entry(VAR_DST_PORT, VariableRange.of(0, 65535)),
-				Map.entry(VAR_PROTOCOL, VariableRange.of(0, 255))
-			),
-			VAR_SRC_IP,
-			VAR_DST_IP,
-			VAR_SRC_PORT,
-			VAR_DST_PORT,
-			VAR_PROTOCOL
-		);
-		firewall.factory = new IDDFactory(firewall.order);
-		IDD idd = firewall.buildFirewall(ALL_RULES.size());
-		ValueFormatter formatter = Formatters.builder(firewall.order)
-			.forIndex(VAR_SRC_IP, Formatters.ipv4())
-			.forIndex(VAR_DST_IP, Formatters.ipv4())
-			.forIndex(VAR_SRC_PORT, Formatters.port())
-			.forIndex(VAR_PROTOCOL, Formatters.ipProtocol())
-			.build();
-		System.out.println(IDDPrinter.printTree(idd, firewall.order, formatter));
 	}
 
 	private IDD buildRule(RuleSpec spec) {
