@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -14,6 +13,7 @@ import java.util.regex.Pattern;
  * Parses a firewall rules file into a list of {@link FirewallRule} objects.
  * <p>
  * <h3>Rules file format</h3>
+ *
  * <pre>
  * # comments and blank lines are ignored
  *
@@ -25,14 +25,14 @@ import java.util.regex.Pattern;
  *
  * <h3>Syntax</h3>
  * <ul>
- *   <li>{@code ACCEPT} or {@code DROP} — the rule action</li>
- *   <li>{@code proto=N}, {@code src_ip=...}, {@code dst_ip=...},
- *       {@code src_port=...}, {@code dst_port=...} — field constraints</li>
- *   <li>{@code *} — catch-all (no constraints)</li>
- *   <li>IP: dotted quad (10.0.0.1) or CIDR (10.0.0.0/8) or "any"</li>
- *   <li>Port: number (80), range (8000-9000) or "any"</li>
- *   <li>Proto: number (6), name (tcp, udp, icmp) or "any"</li>
- *   <li>Omitting a field is equivalent to "any"</li>
+ * <li>{@code ACCEPT} or {@code DROP} — the rule action</li>
+ * <li>{@code proto=N}, {@code src_ip=...}, {@code dst_ip=...},
+ * {@code src_port=...}, {@code dst_port=...} — field constraints</li>
+ * <li>{@code *} — catch-all (no constraints)</li>
+ * <li>IP: dotted quad (10.0.0.1) or CIDR (10.0.0.0/8) or "any"</li>
+ * <li>Port: number (80), range (8000-9000) or "any"</li>
+ * <li>Proto: number (6), name (tcp, udp, icmp) or "any"</li>
+ * <li>Omitting a field is equivalent to "any"</li>
  * </ul>
  *
  * <h3>First-match-wins semantics</h3>
@@ -45,24 +45,25 @@ public final class FirewallParser {
 
 	/** Protocol name to number mapping. */
 	private static final Map<String, Integer> PROTO_MAP = Map.of(
-		"tcp", 6,
-		"udp", 17,
-		"icmp", 1
+		"tcp",
+		6,
+		"udp",
+		17,
+		"icmp",
+		1
 	);
 
 	/** Pattern for a key=value token. */
-	private static final Pattern KV_PATTERN =
-		Pattern.compile("([a-z_]+)=(.+)");
+	private static final Pattern KV_PATTERN = Pattern.compile("([a-z_]+)=(.+)");
 
-	private FirewallParser() {
-	}
+	private FirewallParser() {}
 
 	/**
 	 * Parses all rules from the given reader.
 	 *
 	 * @param reader the input reader
 	 * @return the ordered list of parsed rules
-	 * @throws IOException if the reader cannot be read
+	 * @throws IOException              if the reader cannot be read
 	 * @throws IllegalArgumentException on parse errors
 	 */
 	public static List<FirewallRule> parse(Reader reader) throws IOException {
@@ -138,7 +139,13 @@ public final class FirewallParser {
 		}
 
 		return new FirewallRule(
-			action, sequence, srcIp, dstIp, srcPort, dstPort, proto
+			action,
+			sequence,
+			srcIp,
+			dstIp,
+			srcPort,
+			dstPort,
+			proto
 		);
 	}
 
@@ -153,7 +160,7 @@ public final class FirewallParser {
 	}
 
 	private static FirewallRule.Constraint parseIpConstraint(String value) {
-		if (value.equals("any")) {
+		if (value.equals("any") || value.equals("0.0.0.0/0")) {
 			return null;
 		}
 
@@ -177,11 +184,13 @@ public final class FirewallParser {
 			int high = Integer.parseInt(parts[1]);
 			validatePort(low, "port range");
 			validatePort(high, "port range");
+
 			if (low > high) {
 				throw new IllegalArgumentException(
 					"Invalid port range: " + low + "-" + high
 				);
 			}
+
 			return new FirewallRule.Constraint(low, high);
 		}
 
@@ -213,8 +222,9 @@ public final class FirewallParser {
 			proto = Integer.parseInt(value);
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException(
-				"Invalid protocol: '" + value +
-				"' (expected a number or tcp/udp/icmp/any)",
+				"Invalid protocol: '" +
+					value +
+					"' (expected a number or tcp/udp/icmp/any)",
 				e
 			);
 		}

@@ -3,9 +3,9 @@ package ru.snake.collection.idd.firewall;
 /**
  * Represents a single parsed firewall rule.
  * <p>
- * Each rule has an action (ACCEPT or DROP) and optional constraints on the
- * five predefined variables. A constraint is an inclusive integer interval;
- * if no constraint exists for a variable, it matches any value.
+ * Each rule has an action (ACCEPT or DROP) and optional constraints on the five
+ * predefined variables. A constraint is an inclusive integer interval; if no
+ * constraint exists for a variable, it matches any value.
  */
 public final class FirewallRule {
 
@@ -39,13 +39,13 @@ public final class FirewallRule {
 	/**
 	 * Constructs a firewall rule.
 	 *
-	 * @param action    the rule action
-	 * @param sequence  the rule's position in the original list (0-based)
-	 * @param srcIp     source IP constraint, or null for any
-	 * @param dstIp     destination IP constraint, or null for any
-	 * @param srcPort   source port constraint, or null for any
-	 * @param dstPort   destination port constraint, or null for any
-	 * @param proto     protocol constraint, or null for any
+	 * @param action   the rule action
+	 * @param sequence the rule's position in the original list (0-based)
+	 * @param srcIp    source IP constraint, or null for any
+	 * @param dstIp    destination IP constraint, or null for any
+	 * @param srcPort  source port constraint, or null for any
+	 * @param dstPort  destination port constraint, or null for any
+	 * @param proto    protocol constraint, or null for any
 	 */
 	public FirewallRule(
 		Action action,
@@ -102,11 +102,7 @@ public final class FirewallRule {
 
 	@Override
 	public String toString() {
-		return "Rule[" + sequence + "] " + action +
-			" srcIp=" + srcIp +
-			" dstIp=" + dstIp +
-			" srcPort=" + srcPort +
-			" dstPort=" + dstPort +
-			" proto=" + proto;
+		return "Rule[" + sequence + "] " + action + " srcIp=" + srcIp + " dstIp=" + dstIp + " srcPort=" + srcPort
+				+ " dstPort=" + dstPort + " proto=" + proto;
 	}
 }

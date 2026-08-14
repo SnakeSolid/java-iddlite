@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -15,22 +16,23 @@ import ru.snake.collection.idd.operation.Evaluate;
 /**
  * Command-line interface for firewall rule analysis.
  * <p>
- * Reads firewall rules from a file, builds an IDD, then evaluates packets
- * from another file or STDIN and prints the verdict for each.
+ * Reads firewall rules from a file, builds an IDD, then evaluates packets from
+ * another file or STDIN and prints the verdict for each.
  * <p>
  * <h3>Usage</h3>
+ * 
  * <pre>
  * java -jar idd-firewall.jar &lt;rules-file&gt; [&lt;packets-file&gt;]
  * </pre>
  * <p>
  * If the packets file is omitted, packets are read from STDIN.
  * <p>
- * <h3>Output</h3>
- * One line per packet: {@code ACCEPT} or {@code DROP}.
+ * <h3>Output</h3> One line per packet: {@code ACCEPT} or {@code DROP}.
  */
 public final class FirewallCli {
 
-	private FirewallCli() {}
+	private FirewallCli() {
+	}
 
 	/**
 	 * Entry point.
@@ -40,9 +42,7 @@ public final class FirewallCli {
 	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length < 1 || args.length > 2) {
-			System.err.println(
-				"Usage: java -jar idd-firewall.jar <rules-file> [<packets-file>]"
-			);
+			System.err.println("Usage: java -jar idd-firewall.jar <rules-file> [<packets-file>]");
 			System.exit(1);
 		}
 
@@ -53,18 +53,11 @@ public final class FirewallCli {
 		}
 
 		// Parse rules.
-		try (
-			Reader rulesReader = new InputStreamReader(
-				Files.newInputStream(rulesPath),
-				StandardCharsets.UTF_8
-			)
-		) {
+		try (Reader rulesReader = new InputStreamReader(Files.newInputStream(rulesPath), StandardCharsets.UTF_8)) {
 			List<FirewallRule> rules = FirewallParser.parse(rulesReader);
 
 			if (rules.isEmpty()) {
-				System.err.println(
-					"Warning: no rules parsed from " + rulesPath
-				);
+				System.err.println("Warning: no rules parsed from " + rulesPath);
 			}
 
 			// Build IDD policy.
@@ -75,16 +68,10 @@ public final class FirewallCli {
 			VariableOrder order = factory.order();
 
 			try (Reader packetsReader = getPacketsReader(args)) {
-				List<FirewallPacket> packets = PacketParser.parse(
-					packetsReader
-				);
+				List<FirewallPacket> packets = PacketParser.parse(packetsReader);
 
 				for (FirewallPacket pkt : packets) {
-					boolean accept = Evaluate.evaluate(
-						policy,
-						order,
-						pkt.toAssignment()
-					);
+					boolean accept = Evaluate.evaluate(policy, order, pkt.toAssignment());
 					System.out.println(accept ? "ACCEPT" : "DROP");
 				}
 			}
@@ -100,10 +87,7 @@ public final class FirewallCli {
 			}
 
 			try {
-				return new InputStreamReader(
-					Files.newInputStream(packetsPath),
-					StandardCharsets.UTF_8
-				);
+				return new InputStreamReader(Files.newInputStream(packetsPath), StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				System.err.println("Cannot open packets file: " + packetsPath);
 				System.exit(1);

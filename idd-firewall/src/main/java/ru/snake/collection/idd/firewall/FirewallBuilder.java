@@ -1,7 +1,6 @@
 package ru.snake.collection.idd.firewall;
 
 import java.util.List;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
@@ -13,17 +12,18 @@ import ru.snake.collection.idd.operation.Apply;
  * Implements <b>first-match-wins</b> semantics: the first rule whose
  * constraints are all satisfied determines the packet's verdict.
  * <p>
- * The construction algorithm iterates through rules in order. For each rule,
- * it computes the "new" part that is not already covered by earlier rules,
- * then accumulates ACCEPT and DROP regions into a single policy IDD.
+ * The construction algorithm iterates through rules in order. For each rule, it
+ * computes the "new" part that is not already covered by earlier rules, then
+ * accumulates ACCEPT and DROP regions into a single policy IDD.
  * <p>
- * Mathematically, for rules {@code R[0]..R[n-1]} with actions {@code A[0]..A[n-1]}:
+ * Mathematically, for rules {@code R[0]..R[n-1]} with actions
+ * {@code A[0]..A[n-1]}:
  * <ul>
- *   <li>{@code new[0] = R[0]}</li>
- *   <li>{@code new[i] = R[i] AND NOT(R[0] OR R[1] OR ... OR R[i-1])}</li>
+ * <li>{@code new[0] = R[0]}</li>
+ * <li>{@code new[i] = R[i] AND NOT(R[0] OR R[1] OR ... OR R[i-1])}</li>
  * </ul>
- * The final policy maps each packet to ACCEPT if the matching rule's action
- * is ACCEPT, otherwise DENY.
+ * The final policy maps each packet to ACCEPT if the matching rule's action is
+ * ACCEPT, otherwise DENY.
  */
 public final class FirewallBuilder {
 
@@ -50,7 +50,8 @@ public final class FirewallBuilder {
 			return factory.falseNode();
 		}
 
-		// The IDD of all packets matched by earlier rules (union of R[0]..R[i-1]).
+		// The IDD of all packets matched by earlier rules (union of
+		// R[0]..R[i-1]).
 		IDD covered = factory.falseNode();
 
 		// Accumulate all regions that should ACCEPT.
@@ -82,23 +83,25 @@ public final class FirewallBuilder {
 	 * Builds an IDD representing a single rule's constraints.
 	 */
 	private IDD buildRuleIdd(FirewallRule rule) {
-		IDD result = buildVarIdd(
-			FirewallVars.SRC_IP, rule.srcIp()
-		);
+		IDD result = buildVarIdd(FirewallVars.SRC_IP, rule.srcIp());
 		result = Apply.and(
-			factory, result,
+			factory,
+			result,
 			buildVarIdd(FirewallVars.DST_IP, rule.dstIp())
 		);
 		result = Apply.and(
-			factory, result,
+			factory,
+			result,
 			buildVarIdd(FirewallVars.SRC_PORT, rule.srcPort())
 		);
 		result = Apply.and(
-			factory, result,
+			factory,
+			result,
 			buildVarIdd(FirewallVars.DST_PORT, rule.dstPort())
 		);
 		result = Apply.and(
-			factory, result,
+			factory,
+			result,
 			buildVarIdd(FirewallVars.PROTO, rule.proto())
 		);
 		return result;
@@ -110,19 +113,48 @@ public final class FirewallBuilder {
 	 * the constraint's interval.
 	 */
 	private IDD buildVarIdd(
-		String varName, FirewallRule.Constraint constraint
+		String varName,
+		FirewallRule.Constraint constraint
 	) {
 		if (constraint == null) {
 			return factory.trueNode();
 		}
 
+		// IP constraints may cross the signed 32-bit boundary, producing low > high.
+		// Split into two edges: [low..MAX_VALUE] and [MIN_VALUE..high].
+		if (constraint.low() > constraint.high()) {
+			IDD upper = factory.buildFromIntervals(
+				varName,
+				List.of(
+					new Edge(
+						constraint.low(),
+						Integer.MAX_VALUE,
+						factory.trueNode()
+					)
+				)
+			);
+			IDD lower = factory.buildFromIntervals(
+				varName,
+				List.of(
+					new Edge(
+						Integer.MIN_VALUE,
+						constraint.high(),
+						factory.trueNode()
+					)
+				)
+			);
+			return Apply.or(factory, upper, lower);
+		}
+
 		return factory.buildFromIntervals(
 			varName,
-			List.of(new Edge(
-				constraint.low(),
-				constraint.high(),
-				factory.trueNode()
-			))
+			List.of(
+				new Edge(
+					constraint.low(),
+					constraint.high(),
+					factory.trueNode()
+				)
+			)
 		);
 	}
 

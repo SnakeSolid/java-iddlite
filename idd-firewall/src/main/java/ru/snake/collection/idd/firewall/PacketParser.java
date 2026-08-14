@@ -11,6 +11,7 @@ import java.util.Map;
  * Parses packets from a file or STDIN.
  * <p>
  * <h3>Packets file format</h3>
+ * 
  * <pre>
  * # comments and blank lines are ignored
  *
@@ -21,21 +22,17 @@ import java.util.Map;
  *
  * Each line contains five space-separated fields in the fixed order:
  * <ol>
- *   <li>source IP (dotted quad)</li>
- *   <li>destination IP (dotted quad)</li>
- *   <li>source port (integer)</li>
- *   <li>destination port (integer)</li>
- *   <li>protocol (number or name: tcp, udp, icmp)</li>
+ * <li>source IP (dotted quad)</li>
+ * <li>destination IP (dotted quad)</li>
+ * <li>source port (integer)</li>
+ * <li>destination port (integer)</li>
+ * <li>protocol (number or name: tcp, udp, icmp)</li>
  * </ol>
  */
 public final class PacketParser {
 
 	/** Protocol name to number mapping. */
-	private static final Map<String, Integer> PROTO_MAP = Map.of(
-		"tcp", 6,
-		"udp", 17,
-		"icmp", 1
-	);
+	private static final Map<String, Integer> PROTO_MAP = Map.of("tcp", 6, "udp", 17, "icmp", 1);
 
 	private PacketParser() {
 	}
@@ -45,7 +42,7 @@ public final class PacketParser {
 	 *
 	 * @param reader the input reader
 	 * @return the ordered list of parsed packets
-	 * @throws IOException if the reader cannot be read
+	 * @throws IOException              if the reader cannot be read
 	 * @throws IllegalArgumentException on parse errors
 	 */
 	public static List<FirewallPacket> parse(Reader reader) throws IOException {
@@ -71,10 +68,7 @@ public final class PacketParser {
 		String[] tokens = line.split("\\s+");
 
 		if (tokens.length != 5) {
-			throw new IllegalArgumentException(
-				"Expected 5 fields per packet line, got " + tokens.length +
-				": " + line
-			);
+			throw new IllegalArgumentException("Expected 5 fields per packet line, got " + tokens.length + ": " + line);
 		}
 
 		int srcIp = IpUtil.parseIp(tokens[0]);
@@ -85,19 +79,13 @@ public final class PacketParser {
 
 		// Validate ranges.
 		if (srcPort < FirewallVars.PORT_MIN || srcPort > FirewallVars.PORT_MAX) {
-			throw new IllegalArgumentException(
-				"Source port out of range: " + srcPort
-			);
+			throw new IllegalArgumentException("Source port out of range: " + srcPort);
 		}
 		if (dstPort < FirewallVars.PORT_MIN || dstPort > FirewallVars.PORT_MAX) {
-			throw new IllegalArgumentException(
-				"Destination port out of range: " + dstPort
-			);
+			throw new IllegalArgumentException("Destination port out of range: " + dstPort);
 		}
 		if (proto < FirewallVars.PROTO_MIN || proto > FirewallVars.PROTO_MAX) {
-			throw new IllegalArgumentException(
-				"Protocol out of range: " + proto
-			);
+			throw new IllegalArgumentException("Protocol out of range: " + proto);
 		}
 
 		return new FirewallPacket(srcIp, dstIp, srcPort, dstPort, proto);
@@ -107,10 +95,7 @@ public final class PacketParser {
 		try {
 			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException(
-				"Invalid integer for " + fieldName + ": " + value,
-				e
-			);
+			throw new IllegalArgumentException("Invalid integer for " + fieldName + ": " + value, e);
 		}
 	}
 

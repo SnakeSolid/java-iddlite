@@ -28,13 +28,7 @@ public final class FirewallPacket {
 	 * @param dstPort the destination port
 	 * @param proto   the protocol number
 	 */
-	public FirewallPacket(
-		int srcIp,
-		int dstIp,
-		int srcPort,
-		int dstPort,
-		int proto
-	) {
+	public FirewallPacket(int srcIp, int dstIp, int srcPort, int dstPort, int proto) {
 		this.srcIp = srcIp;
 		this.dstIp = dstIp;
 		this.srcPort = srcPort;
@@ -89,30 +83,11 @@ public final class FirewallPacket {
 
 	@Override
 	public String toString() {
-		return (
-			"Packet[src_ip=" +
-			toIpString(srcIp) +
-			" dst_ip=" +
-			toIpString(dstIp) +
-			" src_port=" +
-			srcPort +
-			" dst_port=" +
-			dstPort +
-			" proto=" +
-			proto +
-			"]"
-		);
+		return ("Packet[src_ip=" + toIpString(srcIp) + " dst_ip=" + toIpString(dstIp) + " src_port=" + srcPort
+				+ " dst_port=" + dstPort + " proto=" + proto + "]");
 	}
 
 	private static String toIpString(int ip) {
-		return (
-			((ip >> 24) & 0xFF) +
-			"." +
-			((ip >> 16) & 0xFF) +
-			"." +
-			((ip >> 8) & 0xFF) +
-			"." +
-			(ip & 0xFF)
-		);
+		return (((ip >> 24) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + (ip & 0xFF));
 	}
 }

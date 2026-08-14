@@ -1,6 +1,7 @@
 package ru.snake.collection.idd.firewall;
 
 import java.util.Map;
+
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.util.VariableRange;
@@ -10,11 +11,11 @@ import ru.snake.collection.idd.util.VariableRange;
  * <p>
  * Variable order in the IDD (top to bottom):
  * <ol>
- *   <li>src_ip — IPv4 source address</li>
- *   <li>dst_ip — IPv4 destination address</li>
- *   <li>src_port — source port</li>
- *   <li>dst_port — destination port</li>
- *   <li>proto — IP protocol number</li>
+ * <li>src_ip — IPv4 source address</li>
+ * <li>dst_ip — IPv4 destination address</li>
+ * <li>src_port — source port</li>
+ * <li>dst_port — destination port</li>
+ * <li>proto — IP protocol number</li>
  * </ol>
  */
 public final class FirewallVars {
@@ -52,7 +53,8 @@ public final class FirewallVars {
 	/** Maximum IPv4 address (255.255.255.255) as signed int. */
 	public static final int IP_MAX = Integer.MAX_VALUE;
 
-	private FirewallVars() {}
+	private FirewallVars() {
+	}
 
 	/**
 	 * Returns the variable names in IDD order.
@@ -80,8 +82,8 @@ public final class FirewallVars {
 	}
 
 	/**
-	 * Creates a new {@link VariableOrder} with the predefined firewall variables
-	 * and ranges.
+	 * Creates a new {@link VariableOrder} with the predefined firewall
+	 * variables and ranges.
 	 */
 	public static VariableOrder order() {
 		return new VariableOrder(ranges(), variableNames());

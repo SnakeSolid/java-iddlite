@@ -1,0 +1,154 @@
+# ============================================================
+# Firewall rules — first match wins
+# ============================================================
+#
+# Variables (fixed order in IDD):
+#   src_ip   dst_ip   src_port   dst_port   proto
+#
+# Actions: ACCEPT | DROP
+#
+# Field formats:
+#   IP:    dotted quad (10.0.0.1), CIDR (10.0.0.0/8), or "any"
+#   Port:  number (80), range (8000-9000), or "any"
+#   Proto: number (6), name (tcp, udp, icmp), or "any"
+#
+# Omitted fields match any value.  "*" is a catch-all token.
+# ============================================================
+
+# ------------------------------------------------------------------
+# 1. Loopback — allow all traffic on 127.0.0.0/8
+# ------------------------------------------------------------------
+ACCEPT src_ip=127.0.0.0/8 dst_ip=127.0.0.0/8
+ACCEPT src_ip=127.0.0.0/8
+ACCEPT dst_ip=127.0.0.0/8
+
+# ------------------------------------------------------------------
+# 2. Established TCP — ephemeral source to well-known destination
+# ------------------------------------------------------------------
+ACCEPT proto=tcp src_port=1024-65535 dst_port=1-1023
+ACCEPT proto=tcp src_port=1024-65535 dst_port=80
+ACCEPT proto=tcp src_port=1024-65535 dst_port=443
+ACCEPT proto=tcp src_port=1024-65535 dst_port=8080
+
+# ------------------------------------------------------------------
+# 3. HTTP (80) — internal to any server
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/8 proto=tcp dst_port=80
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=80
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=80
+
+# ------------------------------------------------------------------
+# 4. HTTPS (443) — internal to any server
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/8 proto=tcp dst_port=443
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=443
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=443
+
+# ------------------------------------------------------------------
+# 5. DNS (UDP 53) — internal to any resolver
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/8 proto=udp dst_port=53
+ACCEPT src_ip=172.16.0.0/12 proto=udp dst_port=53
+ACCEPT src_ip=192.168.0.0/16 proto=udp dst_port=53
+
+# ------------------------------------------------------------------
+# 6. DNS (TCP 53) — zone transfers / large responses
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/8 proto=tcp dst_port=53
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=53
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=53
+
+# ------------------------------------------------------------------
+# 7. SSH (22) — internal management
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/24 proto=tcp dst_port=22
+ACCEPT src_ip=192.168.1.0/24 proto=tcp dst_port=22
+
+# ------------------------------------------------------------------
+# 8. SMTP (25) — internal mail relays
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/8 proto=tcp dst_port=25
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=25
+
+# ------------------------------------------------------------------
+# 9. IMAP/POP3 — internal mail access
+# ------------------------------------------------------------------
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=143
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=993
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=110
+ACCEPT src_ip=192.168.0.0/16 proto=tcp dst_port=995
+
+# ------------------------------------------------------------------
+# 10. NTP — time sync for internal hosts
+# ------------------------------------------------------------------
+ACCEPT proto=udp dst_port=123 src_ip=10.0.0.0/8
+ACCEPT proto=udp dst_port=123 src_ip=172.16.0.0/12
+ACCEPT proto=udp dst_port=123 src_ip=192.168.0.0/16
+
+# ------------------------------------------------------------------
+# 11. SNMP — network monitoring
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/24 proto=udp dst_port=161
+ACCEPT src_ip=10.0.0.0/24 proto=udp dst_port=162
+
+# ------------------------------------------------------------------
+# 12. DHCP — internal clients
+# ------------------------------------------------------------------
+ACCEPT src_ip=192.168.0.0/16 proto=udp dst_port=67
+ACCEPT src_ip=192.168.0.0/16 proto=udp dst_port=68
+
+# ------------------------------------------------------------------
+# 13. MySQL — internal database access
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/16 proto=tcp dst_port=3306
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=3306
+
+# ------------------------------------------------------------------
+# 14. PostgreSQL — internal database access
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/16 proto=tcp dst_port=5432
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=5432
+
+# ------------------------------------------------------------------
+# 15. Redis — internal cache
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/16 proto=tcp dst_port=6379
+
+# ------------------------------------------------------------------
+# 16. HTTP alternative ports — application servers
+# ------------------------------------------------------------------
+ACCEPT src_ip=10.0.0.0/8 proto=tcp dst_port=8000-8999
+ACCEPT src_ip=172.16.0.0/12 proto=tcp dst_port=9000-9999
+
+# ------------------------------------------------------------------
+# 17. Explicitly deny external SSH
+# ------------------------------------------------------------------
+DROP dst_ip=10.0.0.0/8 proto=tcp dst_port=22 src_ip=0.0.0.0/0
+
+# ------------------------------------------------------------------
+# 18. Deny telnet everywhere
+# ------------------------------------------------------------------
+DROP proto=tcp dst_port=23
+
+# ------------------------------------------------------------------
+# 19. Deny external database access
+# ------------------------------------------------------------------
+DROP src_ip=0.0.0.0/0 dst_ip=10.0.0.0/8 proto=tcp dst_port=3306
+DROP src_ip=0.0.0.0/0 dst_ip=10.0.0.0/8 proto=tcp dst_port=5432
+DROP src_ip=0.0.0.0/0 dst_ip=10.0.0.0/8 proto=tcp dst_port=6379
+
+# ------------------------------------------------------------------
+# 20. Deny known bad sources
+# ------------------------------------------------------------------
+DROP src_ip=203.0.113.0/24
+DROP src_ip=198.51.100.0/24
+
+# ------------------------------------------------------------------
+# 21. Deny ICMP from external
+# ------------------------------------------------------------------
+DROP src_ip=0.0.0.0/0 proto=icmp
+
+# ------------------------------------------------------------------
+# 22. Default deny — everything else
+# ------------------------------------------------------------------
+DROP *
