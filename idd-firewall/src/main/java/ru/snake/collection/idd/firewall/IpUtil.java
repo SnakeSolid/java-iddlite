@@ -82,7 +82,8 @@ public final class IpUtil {
 			return -1; // all bits set = 0xFFFFFFFF = -1 as signed int
 		}
 
-		int hostBits = (1 << (32 - prefix)) - 1;
+		// Use long arithmetic to avoid overflow when shifting 1 << 31.
+		int hostBits = (int) ((1L << (32 - prefix)) - 1);
 		return network | hostBits;
 	}
 
