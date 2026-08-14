@@ -12,7 +12,7 @@ Produces:
 
 ## Dependencies
 
-The **core library** has **zero runtime dependencies**. It requires only Java 17+:
+The **core library** has **zero runtime dependencies**. It requires only Java 21+:
 
 ```xml
 <dependency>

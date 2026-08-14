@@ -4,7 +4,7 @@
 
 | Requirement | Version |
 |---|---|
-| JDK | 17+ |
+| JDK | 21+ |
 | Maven | 3.8+ (or use the bundled wrapper `./mvnw`) |
 
 ## Building from source
@@ -37,8 +37,10 @@ git clone <repo-url> && cd iddlite
 iddlite/
 ├── pom.xml                          # Parent POM (multi-module)
 ├── mvnw / mvnw.cmd                 # Maven wrapper
+├── .editorconfig                   # Editor configuration
 ├── AGENTS.md                       # Agent navigation hub
 ├── README.md                       # Project overview
+├── LICENSE                         # MIT license
 ├── docs/                           # Documentation
 │   ├── setup.md
 │   ├── architecture.md
@@ -64,11 +66,33 @@ iddlite/
 │       │   │   └── Restrict.java
 │       │   └── util/               # Utilities
 │       │       ├── Interval.java
+│       │       ├── VariableRange.java
+│       │       ├── ValueFormatter.java
+│       │       ├── Formatters.java
 │       │       ├── DotExporter.java
 │       │       └── IDDPrinter.java
 │       └── test/java/ru/snake/collection/idd/
-│           ├── unit/               # Unit tests (11 classes)
-│           └── integration/        # Integration / stress tests (3 classes)
+│           ├── unit/               # Unit tests (11 classes, 121 tests)
+│           └── integration/        # Integration / stress tests (4 classes, 22 tests)
+├── idd-firewall/                   # Firewall CLI module
+│   ├── pom.xml
+│   ├── rules.txt                   # Sample firewall rules
+│   ├── packets.txt                 # Sample packets
+│   └── src/
+│       ├── main/java/ru/snake/collection/idd/firewall/
+│       │   ├── FirewallCli.java
+│       │   ├── FirewallParser.java
+│       │   ├── FirewallBuilder.java
+│       │   ├── FirewallRule.java
+│       │   ├── FirewallPacket.java
+│       │   ├── FirewallVars.java
+│       │   ├── IpUtil.java
+│       │   └── PacketParser.java
+│       └── test/java/ru/snake/collection/idd/firewall/
+│           ├── FirewallBuilderTest.java
+│           ├── FirewallParserTest.java
+│           ├── IpUtilTest.java
+│           └── PacketParserTest.java
 └── idd-benchmark/                  # JMH benchmark module
     ├── pom.xml
     └── src/main/java/ru/snake/collection/idd/benchmark/

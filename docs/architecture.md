@@ -40,6 +40,9 @@ graph TD
 
     subgraph Utilities
         Interval["Interval"]
+        VariableRange["VariableRange"]
+        ValueFormatter["ValueFormatter"]
+        Formatters["Formatters"]
         DotExporter["DotExporter"]
         IDDPrinter["IDDPrinter\n(print, printTree,\nprintCompact)"]
     end
@@ -51,6 +54,10 @@ graph TD
     IDDFactory --> VariableOrder
     VariableOrder --> VariableRange
     IDDFactory --> VariableRange
+
+    IDDPrinter --> ValueFormatter
+    IDDPrinter --> Formatters
+    IDDPrinter --> VariableOrder
 
     Apply --> IDDFactory
     Apply --> IDD

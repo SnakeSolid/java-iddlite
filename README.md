@@ -70,8 +70,8 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 |---|---|
 | `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder` |
 | `ru.snake.collection.idd.operation` | `Apply`, `Evaluate`, `Quantify`, `Restrict` |
-| `ru.snake.collection.idd.util` | `Interval`, `VariableRange`, `DotExporter`, `IDDPrinter` |
-| `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `PacketParser` |
+| `ru.snake.collection.idd.util` | `Interval`, `VariableRange`, `ValueFormatter`, `Formatters`, `DotExporter`, `IDDPrinter` |
+| `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `FirewallRule`, `FirewallPacket`, `FirewallVars`, `IpUtil`, `PacketParser` |
 
 ## Building
 

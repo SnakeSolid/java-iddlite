@@ -2,7 +2,7 @@
 
 ## Language and compilation
 
-- **Java 17** — compiler source/target set to 17 in `pom.xml`.
+- **Java 21** — compiler source/target/release set to 21 in parent `pom.xml`.
 - **Zero runtime dependencies** — only the JDK standard library. JUnit 5 is test-scoped.
 
 ## Naming
@@ -12,7 +12,7 @@
 | Classes | `PascalCase` | `IDD`, `IDDFactory`, `Apply`, `VariableRange` |
 | Methods / fields | `camelCase` | `getNode`, `uniqueTable`, `currentVarIndex` |
 | Constants | `UPPER_SNAKE_CASE` | `TRUE`, `FALSE` |
-| Package | lowercase, dot-separated | `ru.snake.collection.idd.core` |
+| Package | lowercase, dot-separated | `ru.snake.collection.idd.core`, `ru.snake.collection.idd.operation`, `ru.snake.collection.idd.util` |
 | Test classes | `<ClassName>Test` | `IDDTest`, `ApplyTest` |
 | Test methods | `test<Description>` | `testInterning`, `testDeMorgan1` |
 
@@ -31,18 +31,6 @@ if (x < 0) {
 if (x < 0)
     return false;
 ```
-
-### Exceptions to the brace rule
-
-`DotExporter` contains guard clauses without braces:
-
-```java
-// DotExporter.java — legacy style, should be normalised
-if (labels.containsKey(f))
-    return;
-```
-
-New code must always use braces. The `DotExporter` style is a known deviation.
 
 ## Line structure
 
