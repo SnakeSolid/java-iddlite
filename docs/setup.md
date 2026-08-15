@@ -69,7 +69,7 @@ iddlite/
 │       │       ├── VariableRange.java
 │       │       ├── ValueFormatter.java
 │       │       ├── Formatters.java
-│       │       ├── DotExporter.java
+│       │       ├── MermaidExporter.java
 │       │       └── IDDPrinter.java
 │       └── test/java/ru/snake/collection/idd/
 │           ├── unit/               # Unit tests (11 classes, 121 tests)

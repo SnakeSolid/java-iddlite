@@ -62,7 +62,7 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 | Boolean operations | AND, OR, NOT, XOR, IMPLIES |
 | Quantification | Existential (`exists`) and universal (`forall`) |
 | Restriction / cofactoring | Fix a variable to a concrete value |
-| Visualization | DOT (Graphviz) export + pretty-printer |
+| Visualization | Mermaid diagram export + pretty-printer |
 
 ## Packages
 
@@ -70,7 +70,7 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 |---|---|
 | `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder` |
 | `ru.snake.collection.idd.operation` | `Apply`, `Evaluate`, `Quantify`, `Restrict` |
-| `ru.snake.collection.idd.util` | `Interval`, `VariableRange`, `ValueFormatter`, `Formatters`, `DotExporter`, `IDDPrinter` |
+| `ru.snake.collection.idd.util` | `Interval`, `VariableRange`, `ValueFormatter`, `Formatters`, `MermaidExporter`, `IDDPrinter` |
 | `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `FirewallRule`, `FirewallPacket`, `FirewallVars`, `IpUtil`, `PacketParser` |
 
 ## Building

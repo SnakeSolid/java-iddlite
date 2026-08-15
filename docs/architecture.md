@@ -43,7 +43,7 @@ graph TD
         VariableRange["VariableRange"]
         ValueFormatter["ValueFormatter"]
         Formatters["Formatters"]
-        DotExporter["DotExporter"]
+        MermaidExporter["MermaidExporter"]
         IDDPrinter["IDDPrinter\n(print, printTree,\nprintCompact)"]
     end
 

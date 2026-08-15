@@ -97,5 +97,5 @@ Tests with custom `VariableRange` verify:
 
 ## What is NOT tested
 
-- `DotExporter` and `IDDPrinter` are output utilities tested implicitly through integration scenarios. Dedicated tests could be added for exact output format validation.
+- `MermaidExporter` and `IDDPrinter` are output utilities tested implicitly through integration scenarios. Dedicated tests could be added for exact output format validation.
 - `ConcurrentHashMap`-based factory (not yet implemented) would need concurrency-specific tests.

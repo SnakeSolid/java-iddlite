@@ -95,11 +95,34 @@ boolean allowed = Evaluate.evaluate(policy, order, Map.of(
 
 ## Visualization
 
-Export an IDD to a Graphviz DOT file:
+Export an IDD to a Mermaid diagram file:
 
 ```java
-DotExporter.export(rootIdd, order, "diagram.dot");
-// Then: dot -Tpng diagram.dot -o diagram.png
+MermaidExporter.export(rootIdd, order, "diagram.mmd");
+// The .mmd file renders as a flowchart in Mermaid-compatible viewers
+// (GitHub, GitLab, Zed, etc.)
+```
+
+Or get the diagram as a string (useful for embedding or logging):
+
+```java
+String mermaid = MermaidExporter.toString(rootIdd, order);
+String numeric = MermaidExporter.toString(rootIdd);  // numeric variable labels
+```
+
+All `toString` and `export` methods have overloads that accept a
+`ValueFormatter` to customise how edge interval values are displayed
+(e.g. IPv4 dotted-decimal, protocol names):
+
+```java
+ValueFormatter formatter = Formatters.builder(order)
+    .forIndex("src_ip", Formatters.ipv4())
+    .forIndex("dst_ip", Formatters.ipv4())
+    .forIndex("protocol", Formatters.ipProtocol())
+    .build();
+
+String diagram = MermaidExporter.toString(rootIdd, order, formatter);
+MermaidExporter.export(rootIdd, order, formatter, "diagram.mmd");
 ```
 
 Or pretty-print to stdout:
