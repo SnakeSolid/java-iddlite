@@ -9,7 +9,7 @@ import ru.snake.collection.idd.operation.Apply;
  * Fluent builder for constructing IDDs from interval rules.
  * <p>
  * Example:
- * 
+ *
  * <pre>{@code
  * IDDBuilder b = factory.builder();
  * b.when("x").in(1, 5).then(true);
@@ -79,6 +79,7 @@ public final class IDDBuilder {
 
 	private IDD buildSingleVar(int varIndex) {
 		List<Edge> edges = new ArrayList<>();
+
 		for (Rule r : rules) {
 			if (r.varIndex == varIndex) {
 				IDD child = r.isTrue ? factory.trueNode() : factory.falseNode();
@@ -111,6 +112,11 @@ public final class IDDBuilder {
 	}
 
 	private record Rule(int varIndex, int low, int high, boolean isTrue) {
+	}
+
+	@Override
+	public String toString() {
+		return "IDDBuilder[rules=" + rules + "]";
 	}
 
 	static IDDBuilder create(IDDFactory factory) {

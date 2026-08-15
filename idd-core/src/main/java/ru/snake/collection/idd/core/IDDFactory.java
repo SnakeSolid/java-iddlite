@@ -267,4 +267,9 @@ public final class IDDFactory {
 			return hashCode;
 		}
 	}
+
+	@Override
+	public String toString() {
+		return ("IDDFactory[order=" + order + ", nodes=" + uniqueTable.size() + "]");
+	}
 }

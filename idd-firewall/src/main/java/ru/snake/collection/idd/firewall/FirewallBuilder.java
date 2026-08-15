@@ -132,4 +132,9 @@ public final class FirewallBuilder {
 		FirewallBuilder builder = new FirewallBuilder(factory);
 		return builder.build(rules);
 	}
+
+	@Override
+	public String toString() {
+		return "FirewallBuilder[factory=" + factory + "]";
+	}
 }
