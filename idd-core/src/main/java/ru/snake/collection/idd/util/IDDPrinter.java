@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -29,7 +30,8 @@ import ru.snake.collection.idd.core.VariableOrder;
  */
 public final class IDDPrinter {
 
-	private IDDPrinter() {}
+	private IDDPrinter() {
+	}
 
 	// ==================================================================
 	// Indented mode
@@ -38,8 +40,10 @@ public final class IDDPrinter {
 	/**
 	 * Prints the IDD as an indented text representation.
 	 * <p>
-	 * Shared nodes are printed once with a label (e.g. {@code @n3}), and
-	 * subsequent references point to that label.
+	 * Shared internal nodes are printed once with a label (e.g. {@code @n3}),
+	 * and subsequent references point to that label. Terminal nodes
+	 * ({@code TRUE}, {@code FALSE}) are always printed inline as constants
+	 * rather than as references.
 	 *
 	 * @param f     the root IDD node
 	 * @param order the variable order (for readable variable names)
@@ -53,8 +57,9 @@ public final class IDDPrinter {
 	 * Prints the IDD as an indented text representation with custom value
 	 * formatting for edge intervals.
 	 * <p>
-	 * Shared nodes are printed once with a label (e.g. {@code @n3}), and
-	 * subsequent references point to that label.
+	 * Shared internal nodes are printed once with a label (e.g. {@code @n3}),
+	 * and subsequent references point to that label. Terminal nodes
+	 * ({@code TRUE}, {@code FALSE}) are always printed inline as constants.
 	 *
 	 * @param f         the root IDD node
 	 * @param order     the variable order (for readable variable names)
@@ -62,11 +67,7 @@ public final class IDDPrinter {
 	 *                      name)
 	 * @return the formatted string
 	 */
-	public static String print(
-		IDD f,
-		VariableOrder order,
-		ValueFormatter formatter
-	) {
+	public static String print(IDD f, VariableOrder order, ValueFormatter formatter) {
 		Counter counter = new Counter();
 		Map<IDD, String> labels = new IdentityHashMap<>();
 		assignLabels(f, labels, counter);
@@ -104,11 +105,7 @@ public final class IDDPrinter {
 	 * @param formatter formats raw integer values
 	 * @return the compact string
 	 */
-	public static String printCompact(
-		IDD f,
-		VariableOrder order,
-		ValueFormatter formatter
-	) {
+	public static String printCompact(IDD f, VariableOrder order, ValueFormatter formatter) {
 		Counter counter = new Counter();
 		Map<IDD, String> labels = new IdentityHashMap<>();
 		assignLabels(f, labels, counter);
@@ -152,11 +149,7 @@ public final class IDDPrinter {
 	 * @param formatter formats raw integer values
 	 * @return the tree diagram as a string
 	 */
-	public static String printTree(
-		IDD f,
-		VariableOrder order,
-		ValueFormatter formatter
-	) {
+	public static String printTree(IDD f, VariableOrder order, ValueFormatter formatter) {
 		Counter counter = new Counter();
 		Map<IDD, String> labels = new IdentityHashMap<>();
 		assignLabels(f, labels, counter);
@@ -171,11 +164,7 @@ public final class IDDPrinter {
 	// Internal: label assignment (shared across all modes)
 	// ==================================================================
 
-	private static void assignLabels(
-		IDD f,
-		Map<IDD, String> labels,
-		Counter counter
-	) {
+	private static void assignLabels(IDD f, Map<IDD, String> labels, Counter counter) {
 		if (labels.containsKey(f)) {
 			return;
 		}
@@ -200,12 +189,7 @@ public final class IDDPrinter {
 	 * @param formatter the value formatter
 	 * @return a string like {@code [10.0.0.0,10.0.0.255]} or {@code [1,5]}
 	 */
-	private static String formatInterval(
-		int varIndex,
-		int low,
-		int high,
-		ValueFormatter formatter
-	) {
+	private static String formatInterval(int varIndex, int low, int high, ValueFormatter formatter) {
 		String lowStr = formatter.format(varIndex, low);
 		String highStr = formatter.format(varIndex, high);
 		return "[" + lowStr + "," + highStr + "]";
@@ -237,69 +221,31 @@ public final class IDDPrinter {
 
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
-			sb.append(prefix)
-				.append(label)
-				.append(" ")
-				.append(terminal)
-				.append("\n");
+			sb.append(prefix).append(label).append(" ").append(terminal).append("\n");
 
 			return;
 		}
 
 		String varName = order.name(f.variable());
 		int varIndex = f.variable();
-		sb.append(prefix)
-			.append(label)
-			.append(" var=")
-			.append(varName)
-			.append("\n");
+		sb.append(prefix).append(label).append(" var=").append(varName).append("\n");
 
 		for (Edge e : f.edges()) {
 			String childLabel = labels.get(e.child());
-			String interval = formatInterval(
-				varIndex,
-				e.low(),
-				e.high(),
-				formatter
-			);
+			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
 
 			if (e.child().isTerminal()) {
 				// Always print terminals inline
 				String terminal = e.child().isTrue() ? "TRUE" : "FALSE";
-				sb.append(prefix)
-					.append("  ")
-					.append(interval)
-					.append(" -> ")
-					.append(terminal)
-					.append("\n");
+				sb.append(prefix).append("  ").append(interval).append(" -> ").append(terminal).append("\n");
 			} else if (isSharedChild(f, e.child(), labels)) {
-				// Shared child — show reference, then print inline if first visit
-				sb.append(prefix)
-					.append("  ")
-					.append(interval)
-					.append(" -> @")
-					.append(childLabel)
-					.append("\n");
-				printNode(
-					e.child(),
-					order,
-					labels,
-					formatter,
-					sb,
-					indent + 1,
-					printed
-				);
+				// Shared child — show reference, then print inline if first
+				// visit
+				sb.append(prefix).append("  ").append(interval).append(" -> @").append(childLabel).append("\n");
+				printNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
 			} else {
 				sb.append(prefix).append("  ").append(interval).append(" ->\n");
-				printNode(
-					e.child(),
-					order,
-					labels,
-					formatter,
-					sb,
-					indent + 1,
-					printed
-				);
+				printNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
 			}
 		}
 	}
@@ -307,11 +253,7 @@ public final class IDDPrinter {
 	/**
 	 * Checks if a child node is referenced from other nodes in the diagram.
 	 */
-	private static boolean isSharedChild(
-		IDD parent,
-		IDD child,
-		Map<IDD, String> labels
-	) {
+	private static boolean isSharedChild(IDD parent, IDD child, Map<IDD, String> labels) {
 		for (Map.Entry<IDD, String> entry : labels.entrySet()) {
 			IDD node = entry.getKey();
 
@@ -350,11 +292,7 @@ public final class IDDPrinter {
 
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
-			sb.append(prefix)
-				.append(label)
-				.append(" ")
-				.append(terminal)
-				.append("\n");
+			sb.append(prefix).append(label).append(" ").append(terminal).append("\n");
 
 			return;
 		}
@@ -365,23 +303,12 @@ public final class IDDPrinter {
 
 		for (Edge e : f.edges()) {
 			String childLabel = labels.get(e.child());
-			String interval = formatInterval(
-				varIndex,
-				e.low(),
-				e.high(),
-				formatter
-			);
+			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
 
 			if (isSharedChild(f, e.child(), labels)) {
-				sb.append(" ")
-					.append(interval)
-					.append("]->@")
-					.append(childLabel);
+				sb.append(" ").append(interval).append("]->@").append(childLabel);
 			} else {
-				sb.append(" ")
-					.append(interval)
-					.append("]->")
-					.append(childLabel);
+				sb.append(" ").append(interval).append("]->").append(childLabel);
 			}
 		}
 
@@ -390,14 +317,7 @@ public final class IDDPrinter {
 		// Print non-shared children inline (indented)
 		for (Edge e : f.edges()) {
 			if (!isSharedChild(f, e.child(), labels)) {
-				printCompactNode(
-					e.child(),
-					order,
-					labels,
-					formatter,
-					sb,
-					indent + 1
-				);
+				printCompactNode(e.child(), order, labels, formatter, sb, indent + 1);
 			}
 		}
 	}
@@ -430,12 +350,7 @@ public final class IDDPrinter {
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
 			String nodePrefix = isLast ? LAST_BRANCH : BRANCH;
-			sb.append(prefix)
-				.append(nodePrefix)
-				.append(label)
-				.append(" ")
-				.append(terminal)
-				.append("\n");
+			sb.append(prefix).append(nodePrefix).append(label).append(" ").append(terminal).append("\n");
 
 			return;
 		}
@@ -448,12 +363,7 @@ public final class IDDPrinter {
 			sb.append(varName).append(" (").append(label).append(")\n");
 		} else {
 			String nodePrefix = isLast ? LAST_BRANCH : BRANCH;
-			sb.append(prefix)
-				.append(nodePrefix)
-				.append(varName)
-				.append(" (")
-				.append(label)
-				.append(")\n");
+			sb.append(prefix).append(nodePrefix).append(varName).append(" (").append(label).append(")\n");
 		}
 
 		String childPrefix;
@@ -473,39 +383,18 @@ public final class IDDPrinter {
 			index++;
 			boolean childIsLast = index == edgeCount;
 			String childLabel = labels.get(e.child());
-			String interval = formatInterval(
-				varIndex,
-				e.low(),
-				e.high(),
-				formatter
-			);
-			String linePrefix =
-				childPrefix +
-				(childIsLast ? LAST_BRANCH : BRANCH) +
-				interval +
-				ARROW;
+			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
+			String linePrefix = childPrefix + (childIsLast ? LAST_BRANCH : BRANCH) + interval + ARROW;
 
 			if (e.child().isTerminal()) {
 				String terminal = e.child().isTrue() ? "TRUE" : "FALSE";
-				sb.append(linePrefix)
-					.append(childLabel)
-					.append(" ")
-					.append(terminal)
-					.append("\n");
+				sb.append(linePrefix).append(childLabel).append(" ").append(terminal).append("\n");
 			} else if (isSharedChild(f, e.child(), labels)) {
 				String childVarName = order.name(e.child().variable());
-				sb.append(linePrefix)
-					.append(childVarName)
-					.append(" (@")
-					.append(childLabel)
-					.append(")\n");
+				sb.append(linePrefix).append(childVarName).append(" (@").append(childLabel).append(")\n");
 			} else {
 				String childVarName = order.name(e.child().variable());
-				sb.append(linePrefix)
-					.append(childVarName)
-					.append(" (")
-					.append(childLabel)
-					.append(")\n");
+				sb.append(linePrefix).append(childVarName).append(" (").append(childLabel).append(")\n");
 				String grandChildPrefix;
 
 				if (childIsLast) {
@@ -514,15 +403,7 @@ public final class IDDPrinter {
 					grandChildPrefix = childPrefix + CONTINUATION;
 				}
 
-				printTreeNode(
-					e.child(),
-					order,
-					labels,
-					formatter,
-					sb,
-					grandChildPrefix,
-					childIsLast
-				);
+				printTreeNode(e.child(), order, labels, formatter, sb, grandChildPrefix, childIsLast);
 			}
 		}
 	}

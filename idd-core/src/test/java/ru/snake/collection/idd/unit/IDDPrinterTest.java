@@ -85,8 +85,26 @@ class IDDPrinterTest {
 
 		assertNotNull(result);
 		assertTrue(result.contains("var=y"), "Should contain variable y: " + result);
-		// z should appear (either printed or referenced)
-		assertTrue(result.contains("var=z") || result.contains("@"), "Should show z or reference: " + result);
+		// Shared node should be printed inline and also referenced
+		assertTrue(result.contains("var=z"), "Should print z inline: " + result);
+	}
+
+	@Test
+	@DisplayName("print(genuinely shared node) prints inline and uses reference")
+	void testGenuinelySharedNode() {
+		// zNode is shared by two different y-level nodes under the same x
+		// parent
+		IDD zNode = factory.getNode(2, List.of(new Edge(0, 5, IDD.TRUE), new Edge(6, 10, IDD.FALSE)));
+		IDD yLeft = factory.getNode(1, List.of(new Edge(0, 5, zNode), new Edge(6, 10, IDD.FALSE)));
+		IDD yRight = factory.getNode(1, List.of(new Edge(0, 5, IDD.TRUE), new Edge(6, 10, zNode)));
+		IDD xNode = factory.getNode(0, List.of(new Edge(0, 5, yLeft), new Edge(6, 10, yRight)));
+
+		String result = IDDPrinter.print(xNode, order);
+
+		// z should be printed inline (on first visit) and referenced (on
+		// second)
+		assertTrue(result.contains("var=z"), "Should print z inline: " + result);
+		assertTrue(result.contains("@"), "Should have a reference to z: " + result);
 	}
 
 	@Test
@@ -278,5 +296,27 @@ class IDDPrinterTest {
 		assertNotNull(result);
 		assertTrue(result.contains("var=x"), "Should contain variable: " + result);
 		assertEquals(1, result.lines().filter(l -> l.contains("var=x")).count(), "Should have exactly one var=x line");
+	}
+
+	@Test
+	@DisplayName("print(shared terminal) prints TRUE/FALSE inline, not as reference")
+	void testSharedTerminalPrintedInline() {
+		// Two edges of x both point to TRUE — a shared terminal
+		IDD f = factory.getNode(0, List.of(new Edge(0, 5, IDD.TRUE), new Edge(6, 10, IDD.TRUE)));
+
+		String result = IDDPrinter.print(f, order);
+
+		// Terminals should be printed as constants, not as @nX references
+		assertTrue(result.contains("-> TRUE"), "Should print TRUE inline, not as reference: " + result);
+		// No @ references to a terminal
+		String[] lines = result.lines().toArray(String[]::new);
+		for (String line : lines) {
+			if (line.contains("->")) {
+				assertTrue(
+					line.contains("-> TRUE") || line.contains("-> FALSE"),
+					"Edge should point to a terminal constant: " + line
+				);
+			}
+		}
 	}
 }

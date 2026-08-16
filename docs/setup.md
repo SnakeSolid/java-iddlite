@@ -72,7 +72,7 @@ iddlite/
 │       │       ├── MermaidExporter.java
 │       │       └── IDDPrinter.java
 │       └── test/java/ru/snake/collection/idd/
-│           ├── unit/               # Unit tests (11 classes, 121 tests)
+│           ├── unit/               # Unit tests (11 classes, 138 tests)
 │           └── integration/        # Integration / stress tests (4 classes, 22 tests)
 ├── idd-firewall/                   # Firewall CLI module
 │   ├── pom.xml

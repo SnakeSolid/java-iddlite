@@ -18,7 +18,7 @@
 │   ├── RestrictTest    — Restrict terminals, correct child, recurse, ranged restriction (6 tests)
 │   ├── BuilderTest     — Fluent builder, canonicity, empty builder, ranged builder (6 tests)
 │   ├── IntervalTest    — Interval invariants, contains, adjacency (5 tests)
-│   ├── IDDPrinterTest  — Print modes, formatters, tree output, ip/protocol/port formatting (19 tests)
+│   ├── IDDPrinterTest  — Print modes, shared nodes, terminal inlining, formatters, tree output, ip/protocol/port formatting (20 tests)
 │   └── VariableOrderTest — Order basics, duplicates, bounds, compare, range lookup (13 tests)
 └── integration/        — Integration and stress tests
     ├── ExtremeIntervalTest — MIN/MAX boundary correctness (7 tests)
@@ -41,10 +41,10 @@ idd-firewall/src/test/java/ru/snake/collection/idd/firewall/
 
 | Category | Tests |
 |---|---|
-| **Core unit tests** | 121 |
+| **Core unit tests** | 138 |
 | **Core integration tests** | 22 |
 | **Firewall tests** | 41 |
-| **Total** | 184 |
+| **Total** | 177 |
 
 ## Testing patterns used
 
@@ -97,5 +97,6 @@ Tests with custom `VariableRange` verify:
 
 ## What is NOT tested
 
-- `MermaidExporter` and `IDDPrinter` are output utilities tested implicitly through integration scenarios. Dedicated tests could be added for exact output format validation.
+- `MermaidExporter` is an output utility tested implicitly through integration scenarios. Dedicated tests could be added for exact output format validation.
+- `IDDPrinter` has dedicated unit tests for print modes, shared node references, terminal inlining, and formatters, but does not have a snapshot test for exact output format validation.
 - `ConcurrentHashMap`-based factory (not yet implemented) would need concurrency-specific tests.
