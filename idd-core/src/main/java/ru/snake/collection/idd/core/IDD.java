@@ -1,7 +1,6 @@
 package ru.snake.collection.idd.core;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * An Interval Decision Diagram (IDD) node.
@@ -94,10 +93,15 @@ public final class IDD {
 	}
 
 	private int computeHashCode() {
-		return Objects.hash(
-			variable,
-			edges.stream().mapToInt(e -> Objects.hash(e.low(), e.high(), System.identityHashCode(e.child()))).sum()
-		);
+		int h = 31 + variable;
+
+		for (Edge e : edges) {
+			h = 31 * h + e.low();
+			h = 31 * h + e.high();
+			h = 31 * h + System.identityHashCode(e.child());
+		}
+
+		return h;
 	}
 
 	@Override
