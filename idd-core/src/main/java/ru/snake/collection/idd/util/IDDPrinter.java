@@ -111,7 +111,8 @@ public final class IDDPrinter {
 		assignLabels(f, labels, counter);
 
 		StringBuilder sb = new StringBuilder();
-		printCompactNode(f, order, labels, formatter, sb, 0);
+		Set<IDD> printed = Collections.newSetFromMap(new IdentityHashMap<>());
+		printCompactNode(f, order, labels, formatter, sb, 0, printed);
 
 		return sb.toString();
 	}
@@ -155,7 +156,8 @@ public final class IDDPrinter {
 		assignLabels(f, labels, counter);
 
 		StringBuilder sb = new StringBuilder();
-		printTreeNode(f, order, labels, formatter, sb, "", true);
+		Set<IDD> printed = Collections.newSetFromMap(new IdentityHashMap<>());
+		printTreeNode(f, order, labels, formatter, sb, "", true, printed);
 
 		return sb.toString();
 	}
@@ -210,9 +212,6 @@ public final class IDDPrinter {
 	) {
 		String label = labels.get(f);
 
-		// If already printed elsewhere, we still came here via recursion —
-		// just skip to avoid duplicate output. The caller will have printed
-		// the reference (@label) before recursing.
 		if (!printed.add(f)) {
 			return;
 		}
@@ -238,41 +237,14 @@ public final class IDDPrinter {
 				// Always print terminals inline
 				String terminal = e.child().isTrue() ? "TRUE" : "FALSE";
 				sb.append(prefix).append("  ").append(interval).append(" -> ").append(terminal).append("\n");
-			} else if (isSharedChild(f, e.child(), labels)) {
-				// Shared child — show reference, then print inline if first
-				// visit
+			} else if (printed.contains(e.child())) {
+				// Child already printed elsewhere — show reference
 				sb.append(prefix).append("  ").append(interval).append(" -> @").append(childLabel).append("\n");
-				printNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
 			} else {
 				sb.append(prefix).append("  ").append(interval).append(" ->\n");
 				printNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
 			}
 		}
-	}
-
-	/**
-	 * Checks if a child node is referenced from other nodes in the diagram.
-	 */
-	private static boolean isSharedChild(IDD parent, IDD child, Map<IDD, String> labels) {
-		for (Map.Entry<IDD, String> entry : labels.entrySet()) {
-			IDD node = entry.getKey();
-
-			if (node == parent) {
-				continue;
-			}
-
-			if (node.isTerminal()) {
-				continue;
-			}
-
-			for (Edge e : node.edges()) {
-				if (e.child() == child) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	// ==================================================================
@@ -285,10 +257,17 @@ public final class IDDPrinter {
 		Map<IDD, String> labels,
 		ValueFormatter formatter,
 		StringBuilder sb,
-		int indent
+		int indent,
+		Set<IDD> printed
 	) {
-		String prefix = "  ".repeat(indent);
 		String label = labels.get(f);
+
+		// If already printed elsewhere, skip — callers show a reference.
+		if (!printed.add(f)) {
+			return;
+		}
+
+		String prefix = "  ".repeat(indent);
 
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
@@ -305,19 +284,21 @@ public final class IDDPrinter {
 			String childLabel = labels.get(e.child());
 			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
 
-			if (isSharedChild(f, e.child(), labels)) {
-				sb.append(" ").append(interval).append("]->@").append(childLabel);
+			if (e.child().isTerminal()) {
+				sb.append(" ").append(interval).append("]]->").append(childLabel);
+			} else if (printed.contains(e.child())) {
+				sb.append(" ").append(interval).append("]]->@").append(childLabel);
 			} else {
-				sb.append(" ").append(interval).append("]->").append(childLabel);
+				sb.append(" ").append(interval).append("]]->").append(childLabel);
 			}
 		}
 
 		sb.append("\n");
 
-		// Print non-shared children inline (indented)
+		// Recurse into children that haven't been printed yet
 		for (Edge e : f.edges()) {
-			if (!isSharedChild(f, e.child(), labels)) {
-				printCompactNode(e.child(), order, labels, formatter, sb, indent + 1);
+			if (!e.child().isTerminal() && !printed.contains(e.child())) {
+				printCompactNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
 			}
 		}
 	}
@@ -334,7 +315,7 @@ public final class IDDPrinter {
 
 	private static final String BLANK = "   ";
 
-	private static final String ARROW = " ──► ";
+	private static final String ARROW = " --> ";
 
 	private static void printTreeNode(
 		IDD f,
@@ -343,7 +324,8 @@ public final class IDDPrinter {
 		ValueFormatter formatter,
 		StringBuilder sb,
 		String prefix,
-		boolean isLast
+		boolean isLast,
+		Set<IDD> printed
 	) {
 		String label = labels.get(f);
 
@@ -355,13 +337,20 @@ public final class IDDPrinter {
 			return;
 		}
 
+		// If already in printed set, the caller printed the header on its edge
+		// line — skip printing it again, but expand grandchildren.
+		boolean firstVisit = printed.add(f);
+
 		String varName = order.name(f.variable());
 		int varIndex = f.variable();
 
 		if (prefix.isEmpty()) {
-			// Root node — no prefix characters
+			// Root node
 			sb.append(varName).append(" (").append(label).append(")\n");
+		} else if (firstVisit) {
+			// Header was printed on the edge line — don't repeat it
 		} else {
+			// First visit from a direct call
 			String nodePrefix = isLast ? LAST_BRANCH : BRANCH;
 			sb.append(prefix).append(nodePrefix).append(varName).append(" (").append(label).append(")\n");
 		}
@@ -382,28 +371,25 @@ public final class IDDPrinter {
 		for (Edge e : f.edges()) {
 			index++;
 			boolean childIsLast = index == edgeCount;
-			String childLabel = labels.get(e.child());
 			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
 			String linePrefix = childPrefix + (childIsLast ? LAST_BRANCH : BRANCH) + interval + ARROW;
 
 			if (e.child().isTerminal()) {
 				String terminal = e.child().isTrue() ? "TRUE" : "FALSE";
-				sb.append(linePrefix).append(childLabel).append(" ").append(terminal).append("\n");
-			} else if (isSharedChild(f, e.child(), labels)) {
+				sb.append(linePrefix).append(terminal).append("\n");
+			} else if (printed.contains(e.child())) {
+				// Shared — already printed from another edge
 				String childVarName = order.name(e.child().variable());
+				String childLabel = labels.get(e.child());
 				sb.append(linePrefix).append(childVarName).append(" (@").append(childLabel).append(")\n");
 			} else {
+				// First visit — header on edge line, then expand grandchildren
 				String childVarName = order.name(e.child().variable());
+				String childLabel = labels.get(e.child());
+				printed.add(e.child());
 				sb.append(linePrefix).append(childVarName).append(" (").append(childLabel).append(")\n");
-				String grandChildPrefix;
-
-				if (childIsLast) {
-					grandChildPrefix = childPrefix + BLANK;
-				} else {
-					grandChildPrefix = childPrefix + CONTINUATION;
-				}
-
-				printTreeNode(e.child(), order, labels, formatter, sb, grandChildPrefix, childIsLast);
+				String grandChildPrefix = childPrefix + (childIsLast ? BLANK : CONTINUATION);
+				printTreeNode(e.child(), order, labels, formatter, sb, grandChildPrefix, true, printed);
 			}
 		}
 	}
