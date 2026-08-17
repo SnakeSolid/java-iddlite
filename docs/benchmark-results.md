@@ -35,11 +35,11 @@ Each operation evaluates 1,000 packets. Higher is better.
 
 | Rule Count | Score   | Error  |
 |-----------|---------|--------|
-| 10        | 7.736   | ± 0.138 |
-| 30        | 7.247   | ± 0.245 |
-| 60        | 7.450   | ± 0.339 |
-| 120       | 7.378   | ± 0.246 |
-| 200       | 7.354   | ± 0.358 |
+| 10        | 6.821   | ± 0.193 |
+| 30        | 6.470   | ± 0.232 |
+| 60        | 6.360   | ± 0.195 |
+| 120       | 6.909   | ± 0.667 |
+| 200       | 6.145   | ± 0.261 |
 
 #### Average Time (ms/op)
 
@@ -47,15 +47,15 @@ Lower is better.
 
 | Rule Count | Score  | Error   |
 |-----------|--------|---------|
-| 10        | 0.132  | ± 0.006 |
-| 30        | 0.131  | ± 0.007 |
-| 60        | 0.133  | ± 0.007 |
-| 120       | 0.136  | ± 0.005 |
-| 200       | 0.135  | ± 0.005 |
+| 10        | 0.147  | ± 0.009 |
+| 30        | 0.167  | ± 0.007 |
+| 60        | 0.158  | ± 0.006 |
+| 120       | 0.162  | ± 0.003 |
+| 200       | 0.163  | ± 0.011 |
 
 ### Interpretation
 
-Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.13–0.14 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 7.2–7.7 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark).
+Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.15–0.17 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 6.2–6.9 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark).
 
 ### Running benchmarks
 
@@ -101,6 +101,5 @@ Confirms the NOT operation preserves canonicity and the complement law.
 
 ## Notes
 
-- Benchmarks run on the machine executing `./mvnw test`. Results vary by hardware.
 - The stress tests are part of the test suite and run on every build.
 - Timings include JVM warmup overhead (first run may be slower).
