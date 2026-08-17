@@ -8,11 +8,12 @@
 
 Produces:
 - `idd-core/target/idd-core-1.0.0.jar` — core library
+- `idd-firewall/target/idd-firewall-1.0.0.jar` — firewall CLI tool (fat JAR)
 - `idd-benchmark/target/idd-benchmark-1.0.0.jar` — standalone benchmark JAR (fat JAR with all dependencies)
 
 ## Dependencies
 
-The **core library** has **zero runtime dependencies**. It requires only Java 21+:
+The **core library** and **firewall module** have **zero runtime dependencies**. They require only Java 21+:
 
 ```xml
 <dependency>
@@ -26,11 +27,12 @@ The **benchmark module** depends on JMH (managed by the parent POM's `dependency
 
 ## Multi-module structure
 
-The project uses a parent POM (`iddlite`) with two child modules. All dependency versions are centralised in the parent via `<dependencyManagement>`:
+The project uses a parent POM (`iddlite`) with three child modules. All dependency versions are centralised in the parent via `<dependencyManagement>`:
 
 | Module | Description |
 |---|---|
 | `idd-core` | Core IDD library (zero runtime deps) |
+| `idd-firewall` | Firewall rule analysis CLI (depends on `idd-core`) |
 | `idd-benchmark` | JMH benchmarks against `idd-core` |
 
 Versions of shared dependencies (`junit-jupiter`, `jmh-core`, `jmh-generator-annprocess`) are defined once in the parent POM properties and propagated via `<dependencyManagement>`.
@@ -83,7 +85,7 @@ IDD rule1 = factory.buildFromIntervals("src_ip", List.of(
 ));
 
 // 4. Combine
-IDD policy = Apply.and(factory, rule1, rule2);
+IDD policy = factory.and(rule1, rule2);
 
 // 5. Evaluate
 boolean allowed = Evaluate.evaluate(policy, order, Map.of(
