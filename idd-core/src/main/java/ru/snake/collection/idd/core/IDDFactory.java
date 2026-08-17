@@ -23,6 +23,8 @@ public final class IDDFactory {
 
 	private final Map<NodeKey, IDD> uniqueTable;
 
+	private final Map<OperationKey, IDD> applyCache = new WeakHashMap<>();
+
 	public IDDFactory(VariableOrder order) {
 		this.order = Objects.requireNonNull(order);
 		this.uniqueTable = new WeakHashMap<>();
@@ -271,5 +273,214 @@ public final class IDDFactory {
 	@Override
 	public String toString() {
 		return ("IDDFactory[order=" + order + ", nodes=" + uniqueTable.size() + "]");
+	}
+
+	// ---- Apply operations ----
+
+	/**
+	 * Computes the logical AND of two IDDs.
+	 * <p>
+	 * Memoised via a {@link WeakHashMap} cache so repeated subcomputations on
+	 * the same operands are avoided.
+	 *
+	 * @param f the left operand
+	 * @param g the right operand
+	 * @return {@code f AND g}
+	 */
+	public IDD and(IDD f, IDD g) {
+		return apply(f, g, Operation.AND);
+	}
+
+	/**
+	 * Computes the logical OR of two IDDs.
+	 *
+	 * @param f the left operand
+	 * @param g the right operand
+	 * @return {@code f OR g}
+	 */
+	public IDD or(IDD f, IDD g) {
+		return apply(f, g, Operation.OR);
+	}
+
+	/**
+	 * Computes the logical XOR of two IDDs.
+	 *
+	 * @param f the left operand
+	 * @param g the right operand
+	 * @return {@code f XOR g}
+	 */
+	public IDD xor(IDD f, IDD g) {
+		return apply(f, g, Operation.XOR);
+	}
+
+	/**
+	 * Computes the logical implication {@code f → g}.
+	 *
+	 * @param f the antecedent
+	 * @param g the consequent
+	 * @return {@code !f OR g}
+	 */
+	public IDD implies(IDD f, IDD g) {
+		return apply(f, g, Operation.IMPLIES);
+	}
+
+	/**
+	 * Computes the logical NOT of an IDD.
+	 *
+	 * @param f the operand
+	 * @return {@code NOT f}
+	 */
+	public IDD not(IDD f) {
+		if (f.isTerminal()) {
+			return f.isTrue() ? IDD.FALSE : IDD.TRUE;
+		}
+
+		List<Edge> newEdges = new ArrayList<>();
+		for (Edge ef : f.edges()) {
+			IDD child = not(ef.child());
+			newEdges.add(new Edge(ef.low(), ef.high(), child));
+		}
+		return getNode(f.variable(), newEdges);
+	}
+
+	/**
+	 * Core apply: combines two IDDs under the given connective. Uses
+	 * memoisation to avoid redundant recursive work.
+	 */
+	private IDD apply(IDD f, IDD g, Operation op) {
+		OperationKey key = new OperationKey(f, g, op);
+		return applyCache.computeIfAbsent(key, k -> applyRecursive(f, g, op));
+	}
+
+	private IDD applyRecursive(IDD f, IDD g, Operation op) {
+		// Base: both terminals.
+		if (f.isTerminal() && g.isTerminal()) {
+			boolean result = op.apply(f.isTrue(), g.isTrue());
+			return result ? IDD.TRUE : IDD.FALSE;
+		}
+
+		if (f.isTerminal()) {
+			return applyTerminalLeft(f, g, op);
+		}
+		if (g.isTerminal()) {
+			return applyTerminalRight(f, g, op);
+		}
+
+		int fVar = f.variable();
+		int gVar = g.variable();
+
+		if (fVar == gVar) {
+			return applySameVar(f, g, fVar, op);
+		} else if (fVar < gVar) {
+			return applyHigherVar(f, g, op);
+		} else {
+			return applyLowerVar(f, g, op);
+		}
+	}
+
+	private IDD applySameVar(IDD f, IDD g, int var, Operation op) {
+		List<Edge> newEdges = new ArrayList<>();
+		int i = 0, j = 0;
+		List<Edge> fEdges = f.edges(), gEdges = g.edges();
+
+		while (i < fEdges.size() && j < gEdges.size()) {
+			Edge ef = fEdges.get(i), eg = gEdges.get(j);
+			int lo = Math.max(ef.low(), eg.low());
+			int hi = Math.min(ef.high(), eg.high());
+
+			if (lo <= hi) {
+				IDD child = applyRecursive(ef.child(), eg.child(), op);
+				newEdges.add(new Edge(lo, hi, child));
+			}
+
+			if (ef.high() < eg.high()) {
+				i++;
+			} else if (eg.high() < ef.high()) {
+				j++;
+			} else {
+				i++;
+				j++;
+			}
+		}
+
+		if (newEdges.isEmpty()) {
+			return IDD.FALSE;
+		}
+		return getNode(var, newEdges);
+	}
+
+	/**
+	 * f's variable is earlier in the order (higher in the diagram).
+	 */
+	private IDD applyHigherVar(IDD f, IDD g, Operation op) {
+		List<Edge> newEdges = new ArrayList<>();
+		for (Edge ef : f.edges()) {
+			IDD child = applyRecursive(ef.child(), g, op);
+			newEdges.add(new Edge(ef.low(), ef.high(), child));
+		}
+		return getNode(f.variable(), newEdges);
+	}
+
+	/**
+	 * g's variable is earlier in the order (higher in the diagram).
+	 */
+	private IDD applyLowerVar(IDD f, IDD g, Operation op) {
+		List<Edge> newEdges = new ArrayList<>();
+		for (Edge eg : g.edges()) {
+			IDD child = applyRecursive(f, eg.child(), op);
+			newEdges.add(new Edge(eg.low(), eg.high(), child));
+		}
+		return getNode(g.variable(), newEdges);
+	}
+
+	private IDD applyTerminalLeft(IDD fTerm, IDD g, Operation op) {
+		List<Edge> newEdges = new ArrayList<>();
+		for (Edge eg : g.edges()) {
+			IDD child = applyRecursive(fTerm, eg.child(), op);
+			newEdges.add(new Edge(eg.low(), eg.high(), child));
+		}
+		return getNode(g.variable(), newEdges);
+	}
+
+	private IDD applyTerminalRight(IDD f, IDD gTerm, Operation op) {
+		List<Edge> newEdges = new ArrayList<>();
+		for (Edge ef : f.edges()) {
+			IDD child = applyRecursive(ef.child(), gTerm, op);
+			newEdges.add(new Edge(ef.low(), ef.high(), child));
+		}
+		return getNode(f.variable(), newEdges);
+	}
+
+	/**
+	 * Cache key for Boolean operations. Uses stable {@link Operation} enum
+	 * instead of {@code System.identityHashCode} on lambdas.
+	 */
+	private static final class OperationKey {
+
+		private final IDD f, g;
+		private final Operation op;
+
+		OperationKey(IDD f, IDD g, Operation op) {
+			this.f = f;
+			this.g = g;
+			this.op = op;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			} else if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			OperationKey other = (OperationKey) o;
+			return f == other.f && g == other.g && op == other.op;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(System.identityHashCode(f), System.identityHashCode(g), op);
+		}
 	}
 }

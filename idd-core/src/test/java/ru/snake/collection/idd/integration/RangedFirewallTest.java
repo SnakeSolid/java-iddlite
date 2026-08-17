@@ -17,7 +17,6 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.operation.Quantify;
 import ru.snake.collection.idd.operation.Restrict;
@@ -63,7 +62,7 @@ class RangedFirewallTest {
 			.build();
 
 		// Combined policy: any of the rules
-		IDD policy = Apply.or(factory, Apply.or(factory, rule1, rule2), rule3);
+		IDD policy = factory.or(factory.or(rule1, rule2), rule3);
 
 		// TCP to port 80 should be accepted
 		assertTrue(Evaluate.evaluate(policy, order, Map.of("proto", 6, "src_port", 12345, "dst_port", 80)));
@@ -113,7 +112,7 @@ class RangedFirewallTest {
 		// f = (proto in [6,6]) AND (port in [80,443])
 		IDD protoPart = factory.buildFromIntervals("proto", List.of(new Edge(6, 6, factory.trueNode())));
 		IDD portPart = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
-		IDD f = Apply.and(factory, protoPart, portPart);
+		IDD f = factory.and(protoPart, portPart);
 
 		// exists port. f => proto in [6,6]
 		IDD existsPort = Quantify.exists(factory, f, "port");
@@ -133,8 +132,8 @@ class RangedFirewallTest {
 		IDDFactory factory = new IDDFactory(order);
 
 		IDD f = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
-		IDD notF = Apply.not(factory, f);
-		IDD tautology = Apply.or(factory, f, notF);
+		IDD notF = factory.not(f);
+		IDD tautology = factory.or(f, notF);
 
 		// f OR NOT(f) must be TRUE for the entire variable range.
 		assertSame(IDD.TRUE, tautology);
@@ -154,12 +153,12 @@ class RangedFirewallTest {
 		assertTrue(Evaluate.evaluate(f, order, Map.of("flag", 1)));
 
 		// NOT(f) is TRUE when flag == 0.
-		IDD notF = Apply.not(factory, f);
+		IDD notF = factory.not(f);
 		assertTrue(Evaluate.evaluate(notF, order, Map.of("flag", 0)));
 		assertFalse(Evaluate.evaluate(notF, order, Map.of("flag", 1)));
 
 		// f OR NOT(f) covers the full range [0,1] => reduces to TRUE.
-		assertSame(IDD.TRUE, Apply.or(factory, f, notF));
+		assertSame(IDD.TRUE, factory.or(f, notF));
 	}
 
 	@Test
@@ -175,7 +174,7 @@ class RangedFirewallTest {
 		// Build a proto-only rule: accept protocols 6, 17
 		IDD protoRule = factory.buildFromIntervals("proto", List.of(new Edge(6, 17, factory.trueNode())));
 		// AND them: accept when BOTH conditions are met
-		IDD policy = Apply.and(factory, portRule, protoRule);
+		IDD policy = factory.and(portRule, protoRule);
 
 		// Test specific points in the space.
 		// Port in range AND proto in range => TRUE
@@ -244,7 +243,7 @@ class RangedFirewallTest {
 			.in(80, 443)
 			.then(true)
 			.build();
-		policy = Apply.or(factory, policy, webRule);
+		policy = factory.or(policy, webRule);
 
 		// Allow UDP DNS
 		IDD dnsRule = factory.builder()
@@ -255,7 +254,7 @@ class RangedFirewallTest {
 			.in(53, 53)
 			.then(true)
 			.build();
-		policy = Apply.or(factory, policy, dnsRule);
+		policy = factory.or(policy, dnsRule);
 
 		// Allow TCP SSH
 		IDD sshRule = factory.builder()
@@ -266,7 +265,7 @@ class RangedFirewallTest {
 			.in(22, 22)
 			.then(true)
 			.build();
-		policy = Apply.or(factory, policy, sshRule);
+		policy = factory.or(policy, sshRule);
 
 		// Evaluate 50000 packets
 		Random rand = new Random(12345);

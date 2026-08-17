@@ -3,8 +3,6 @@ package ru.snake.collection.idd.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.snake.collection.idd.operation.Apply;
-
 /**
  * Fluent builder for constructing IDDs from interval rules.
  * <p>
@@ -72,7 +70,7 @@ public final class IDDBuilder {
 		IDD result = factory.trueNode();
 		for (int varIdx : distinctVars) {
 			IDD single = buildSingleVar(varIdx);
-			result = Apply.and(factory, result, single);
+			result = factory.and(result, single);
 		}
 		return result;
 	}

@@ -15,7 +15,6 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.operation.Quantify;
 import ru.snake.collection.idd.util.VariableRange;
@@ -23,6 +22,7 @@ import ru.snake.collection.idd.util.VariableRange;
 class QuantifyTest {
 
 	private VariableOrder order;
+
 	private IDDFactory factory;
 
 	@BeforeEach
@@ -86,7 +86,7 @@ class QuantifyTest {
 		// f = (x in [1,5]) AND (y in [10,20])
 		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
 		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
-		IDD f = Apply.and(factory, xPart, yPart);
+		IDD f = factory.and(xPart, yPart);
 
 		// forall x. f = AND over x's children = FALSE (because gaps are FALSE).
 		IDD result = Quantify.forall(factory, f, "x");
@@ -99,7 +99,7 @@ class QuantifyTest {
 		// f = (x in [1,5]) AND (y in [10,20])
 		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
 		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
-		IDD f = Apply.and(factory, xPart, yPart);
+		IDD f = factory.and(xPart, yPart);
 
 		// exists x. f should give a y-based result.
 		IDD result = Quantify.exists(factory, f, "x");

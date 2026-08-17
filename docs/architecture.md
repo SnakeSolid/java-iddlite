@@ -29,10 +29,10 @@ graph TD
         IDDBuilder["IDDBuilder"]
         VariableOrder["VariableOrder"]
         VariableRange["VariableRange"]
+        Operation["Operation (enum)"]
     end
 
     subgraph Operations
-        Apply["Apply"]
         Evaluate["Evaluate"]
         Quantify["Quantify"]
         Restrict["Restrict"]
@@ -50,8 +50,8 @@ graph TD
     IDDBuilder --> IDDFactory
     IDDFactory --> IDD
     IDDFactory --> Edge
-    Edge --> IDD
     IDDFactory --> VariableOrder
+    IDDFactory --> Operation
     VariableOrder --> VariableRange
     IDDFactory --> VariableRange
 
@@ -59,12 +59,10 @@ graph TD
     IDDPrinter --> Formatters
     IDDPrinter --> VariableOrder
 
-    Apply --> IDDFactory
-    Apply --> IDD
     Evaluate --> IDD
     Evaluate --> VariableOrder
     Quantify --> IDDFactory
-    Quantify --> Apply
+    Quantify --> IDD
     Restrict --> IDDFactory
     Restrict --> IDD
 ```
@@ -86,6 +84,7 @@ Singleton-scoped factory that:
 - Applies reduction (eliminate single-edge full-range nodes).
 - Hash-conses via a `WeakHashMap` unique table.
 - Validates that edges fall within the variable's valid range.
+- Performs Boolean apply operations (`and`, `or`, `xor`, `implies`, `not`) with a memoisation cache (`WeakHashMap`) keyed on `(f, g, Operation)`. The cache lives as long as the factory, eliminating redundant subcomputations.
 
 The `WeakHashMap` allows unreachable nodes to be garbage-collected, making the factory safe for long-lived processes that create many temporary IDDs.
 
@@ -112,13 +111,13 @@ Represents the valid value range `[min, max]` for a variable. Default is the ful
 
 ## Operations
 
-### `Apply`
+### `Operation` (core)
 
-Implements the standard apply algorithm for BDDs, adapted for interval edges:
-- **Binary**: AND, OR, XOR, IMPLIES via interval-aware traversal.
-- **Unary**: NOT.
-- Memoised via a `WeakHashMap` cache keyed on `(f, g, operation)`.
-- Handles the three standard cases: same variable, left higher, right higher.
+Enum representing Boolean connectives: `AND`, `OR`, `XOR`, `IMPLIES`. Replaces the previous use of `BiFunction<Boolean,Boolean,Boolean>` lambdas, which required `System.identityHashCode` for caching. An `enum` provides stable, collision-free identity.
+
+### `Apply` (removed)
+
+Previously a separate class with static methods that created a new `Apply` instance per call. Replaced by instance methods on `IDDFactory` (`factory.and()`, `factory.or()`, etc.) with a persistent `applyCache` that lives as long as the factory. This eliminates the useless per-call cache allocation and also fixes the `System.identityHashCode(op)` instability in cache keys.
 
 ### `Evaluate`
 

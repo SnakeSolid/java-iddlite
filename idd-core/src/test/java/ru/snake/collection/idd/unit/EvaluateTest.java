@@ -15,13 +15,13 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.util.VariableRange;
 
 class EvaluateTest {
 
 	private VariableOrder order;
+
 	private IDDFactory factory;
 
 	@BeforeEach
@@ -57,11 +57,11 @@ class EvaluateTest {
 	void testMultiVariable() {
 		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
 		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
-		IDD combined = Apply.and(factory, xPart, yPart);
+		IDD result = factory.and(xPart, yPart);
 
-		assertTrue(Evaluate.evaluate(combined, order, Map.of("x", 3, "y", 15)));
-		assertFalse(Evaluate.evaluate(combined, order, Map.of("x", 3, "y", 5)));
-		assertFalse(Evaluate.evaluate(combined, order, Map.of("x", 7, "y", 15)));
+		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 15)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 5)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 7, "y", 15)));
 	}
 
 	@Test
@@ -130,10 +130,10 @@ class EvaluateTest {
 
 		IDD portPart = rangedFactory.buildFromIntervals("port", List.of(new Edge(1, 1024, rangedFactory.trueNode())));
 		IDD protoPart = rangedFactory.buildFromIntervals("proto", List.of(new Edge(6, 17, rangedFactory.trueNode())));
-		IDD combined = Apply.and(rangedFactory, portPart, protoPart);
+		IDD result = factory.and(portPart, protoPart);
 
-		assertTrue(Evaluate.evaluate(combined, rangedOrder, Map.of("port", 80, "proto", 6)));
-		assertFalse(Evaluate.evaluate(combined, rangedOrder, Map.of("port", 80, "proto", 60)));
-		assertFalse(Evaluate.evaluate(combined, rangedOrder, Map.of("port", 8080, "proto", 6)));
+		assertTrue(Evaluate.evaluate(result, rangedOrder, Map.of("port", 80, "proto", 6)));
+		assertFalse(Evaluate.evaluate(result, rangedOrder, Map.of("port", 80, "proto", 60)));
+		assertFalse(Evaluate.evaluate(result, rangedOrder, Map.of("port", 8080, "proto", 6)));
 	}
 }

@@ -9,7 +9,7 @@
 
 | Element | Convention | Example |
 |---|---|---|
-| Classes | `PascalCase` | `IDD`, `IDDFactory`, `Apply`, `VariableRange` |
+| Classes | `PascalCase` | `IDD`, `IDDFactory`, `Operation`, `VariableRange` |
 | Methods / fields | `camelCase` | `getNode`, `uniqueTable`, `currentVarIndex` |
 | Constants | `UPPER_SNAKE_CASE` | `TRUE`, `FALSE` |
 | Package | lowercase, dot-separated | `ru.snake.collection.idd.core`, `ru.snake.collection.idd.operation`, `ru.snake.collection.idd.util` |
@@ -39,8 +39,7 @@ if (x < 0)
 - **Long expressions** are wrapped with the continuation indented one tab level deeper.
 
 ```java
-IDD rule = Apply.and(
-    factory,
+IDD rule = factory.and(
     rule,
     factory.buildFromIntervals("dst_ip", List.of(new Edge(dstLow, dstHigh, factory.trueNode())))
 );
@@ -59,8 +58,8 @@ All core classes are `final` with `private final` fields. No setters exist.
 | `Interval` | immutable |
 | `VariableRange` | immutable |
 | `VariableOrder` | immutable |
-| `IDDFactory` | mutable state (`uniqueTable`) |
-| `Apply` | mutable state (`cache`) |
+| `Operation` | immutable (enum) |
+| `IDDFactory` | mutable state (`uniqueTable`, `applyCache`) |
 | `IDDBuilder` | mutable (builder pattern, consumed on `build()`) |
 
 ### Visibility
@@ -70,7 +69,8 @@ All core classes are `final` with `private final` fields. No setters exist.
 | `public` | API surface — classes, factory methods, operations |
 | package-private | `IDD` constructors, `IDDBuilder` constructor, `IDD.create()` |
 | `private` | Internal helpers, empty constructors on utility classes |
-| `static` | Convenience operations (`Apply.and()`, `Evaluate.evaluate()`, etc.) |
+| `static` | Convenience operations (`Evaluate.evaluate()`, `Quantify.exists()`, etc.) |
+| `instance` | Factory methods (`factory.and()`, `factory.or()`, `factory.not()`, `factory.xor()`, `factory.implies()`) |
 
 ### Utility classes
 
@@ -83,6 +83,8 @@ public final class Evaluate {
     // ...
 }
 ```
+
+Apply operations (`and`, `or`, `xor`, `implies`, `not`) are instance methods on `IDDFactory` rather than a separate `Apply` class. This avoids the per-call cache allocation problem: every static call previously created a new `Apply` instance with a fresh, useless `WeakHashMap`.
 
 ### Accessor naming
 

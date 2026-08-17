@@ -62,7 +62,7 @@ public final class Quantify {
 			IDD result = IDD.FALSE;
 
 			for (IDD child : children) {
-				result = Apply.or(factory, result, child);
+				result = factory.or(result, child);
 			}
 
 			return result;
@@ -112,7 +112,7 @@ public final class Quantify {
 			}
 			IDD result = IDD.TRUE;
 			for (IDD child : children) {
-				result = Apply.and(factory, result, child);
+				result = factory.and(result, child);
 			}
 			return result;
 		}

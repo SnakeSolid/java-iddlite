@@ -21,7 +21,6 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.util.VariableRange;
 
@@ -35,13 +34,13 @@ import ru.snake.collection.idd.util.VariableRange;
  *
  * <p>
  * Run with:
- * 
+ *
  * <pre>
  *   java -jar idd-benchmark-1.0.0.jar
  * </pre>
- * 
+ *
  * Or via Maven:
- * 
+ *
  * <pre>
  *   mvn -pl idd-benchmark package
  *   java -jar idd-benchmark/target/idd-benchmark-1.0.0.jar
@@ -304,7 +303,7 @@ public class FirewallEvaluationBenchmark {
 
 		for (int i = 0; i < count; i++) {
 			RuleSpec spec = ALL_RULES.get(i);
-			firewall = Apply.or(factory, firewall, buildRule(spec));
+			firewall = factory.or(firewall, buildRule(spec));
 		}
 
 		return firewall;
@@ -318,26 +317,14 @@ public class FirewallEvaluationBenchmark {
 		int[] pr = spec.protocol() != null ? new int[] { spec.protocol(), spec.protocol() } : new int[] { 0, 255 };
 
 		IDD result = factory.buildFromIntervals(VAR_SRC_IP, List.of(new Edge(s[0], s[1], factory.trueNode())));
-		result = Apply.and(
-			factory,
-			result,
-			factory.buildFromIntervals(VAR_DST_IP, List.of(new Edge(d[0], d[1], factory.trueNode())))
-		);
-		result = Apply.and(
-			factory,
-			result,
-			factory.buildFromIntervals(VAR_SRC_PORT, List.of(new Edge(sp[0], sp[1], factory.trueNode())))
-		);
-		result = Apply.and(
-			factory,
-			result,
-			factory.buildFromIntervals(VAR_DST_PORT, List.of(new Edge(dp[0], dp[1], factory.trueNode())))
-		);
-		result = Apply.and(
-			factory,
-			result,
-			factory.buildFromIntervals(VAR_PROTOCOL, List.of(new Edge(pr[0], pr[1], factory.trueNode())))
-		);
+		result = factory
+			.and(result, factory.buildFromIntervals(VAR_DST_IP, List.of(new Edge(d[0], d[1], factory.trueNode()))));
+		result = factory
+			.and(result, factory.buildFromIntervals(VAR_SRC_PORT, List.of(new Edge(sp[0], sp[1], factory.trueNode()))));
+		result = factory
+			.and(result, factory.buildFromIntervals(VAR_DST_PORT, List.of(new Edge(dp[0], dp[1], factory.trueNode()))));
+		result = factory
+			.and(result, factory.buildFromIntervals(VAR_PROTOCOL, List.of(new Edge(pr[0], pr[1], factory.trueNode()))));
 
 		return result;
 	}

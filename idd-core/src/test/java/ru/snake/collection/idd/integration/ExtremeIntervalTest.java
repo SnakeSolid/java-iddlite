@@ -15,12 +15,12 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Apply;
 import ru.snake.collection.idd.operation.Evaluate;
 
 class ExtremeIntervalTest {
 
 	private VariableOrder order;
+
 	private IDDFactory factory;
 
 	@BeforeEach
@@ -72,7 +72,7 @@ class ExtremeIntervalTest {
 				new Edge(Integer.MAX_VALUE, Integer.MAX_VALUE, IDD.FALSE)
 			)
 		);
-		IDD notNode = Apply.not(factory, node);
+		IDD notNode = factory.not(node);
 
 		assertFalse(Evaluate.evaluate(notNode, order, Map.of("x", Integer.MIN_VALUE)));
 		assertTrue(Evaluate.evaluate(notNode, order, Map.of("x", Integer.MAX_VALUE)));
@@ -112,7 +112,7 @@ class ExtremeIntervalTest {
 				new Edge(Integer.MAX_VALUE / 2 + 1, Integer.MAX_VALUE, IDD.TRUE)
 			)
 		);
-		IDD c = Apply.and(factory, a, b);
+		IDD c = factory.and(a, b);
 		assertSame(IDD.FALSE, c);
 	}
 }

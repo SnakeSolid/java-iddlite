@@ -28,8 +28,8 @@ IDD rule = factory.builder()
     .build();
 
 // Operations
-IDD combined = Apply.and(factory, rule, anotherRule);
-IDD negated = Apply.not(factory, rule);
+IDD combined = factory.and(rule, anotherRule);
+IDD negated = factory.not(rule);
 IDD restricted = Restrict.restrict(factory, rule, "x", 5);
 
 // Evaluate
@@ -68,8 +68,8 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 
 | Package | Contents |
 |---|---|
-| `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder` |
-| `ru.snake.collection.idd.operation` | `Apply`, `Evaluate`, `Quantify`, `Restrict` |
+| `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder`, `Operation` |
+| `ru.snake.collection.idd.operation` | `Evaluate`, `Quantify`, `Restrict` |
 | `ru.snake.collection.idd.util` | `Interval`, `VariableRange`, `ValueFormatter`, `Formatters`, `MermaidExporter`, `IDDPrinter` |
 | `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `FirewallRule`, `FirewallPacket`, `FirewallVars`, `IpUtil`, `PacketParser` |
 
