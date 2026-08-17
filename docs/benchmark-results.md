@@ -9,8 +9,8 @@
 | Rules | 50 |
 | Variables | 3 (`src_ip`, `dst_ip`, `src_port`) |
 | Evaluations | 50,000 |
-| Time | ~34 ms |
-| Throughput | ~1.47M evaluations/second |
+| Time | ~2 ms |
+| Throughput | ~25M evaluations/second |
 
 The evaluation is a simple O(depth) walk through the diagram. With 3 variables, depth is at most 3 hops per evaluation.
 
@@ -35,11 +35,11 @@ Each operation evaluates 1,000 packets. Higher is better.
 
 | Rule Count | Score   | Error  |
 |-----------|---------|--------|
-| 10        | 6.821   | ± 0.193 |
-| 30        | 6.470   | ± 0.232 |
-| 60        | 6.360   | ± 0.195 |
-| 120       | 6.909   | ± 0.667 |
-| 200       | 6.145   | ± 0.261 |
+| 10        | 29.571  | ± 1.116 |
+| 30        | 25.865  | ± 0.778 |
+| 60        | 25.690  | ± 0.873 |
+| 120       | 25.619  | ± 1.334 |
+| 200       | 25.445  | ± 0.815 |
 
 #### Average Time (ms/op)
 
@@ -47,15 +47,15 @@ Lower is better.
 
 | Rule Count | Score  | Error   |
 |-----------|--------|---------|
-| 10        | 0.147  | ± 0.009 |
-| 30        | 0.167  | ± 0.007 |
-| 60        | 0.158  | ± 0.006 |
-| 120       | 0.162  | ± 0.003 |
-| 200       | 0.163  | ± 0.011 |
+| 10        | 0.034  | ± 0.001 |
+| 30        | 0.038  | ± 0.001 |
+| 60        | 0.039  | ± 0.001 |
+| 120       | 0.039  | ± 0.001 |
+| 200       | 0.040  | ± 0.001 |
 
 ### Interpretation
 
-Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.15–0.17 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 6.2–6.9 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark).
+Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.034–0.040 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 25.4–29.6 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark). The zero-allocation `int[]` evaluation path eliminates per-packet Map construction and per-node string-keyed lookups, delivering roughly 4× the throughput of the previous Map-based implementation.
 
 ### Running benchmarks
 
