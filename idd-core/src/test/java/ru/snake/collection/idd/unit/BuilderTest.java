@@ -19,6 +19,7 @@ import ru.snake.collection.idd.util.VariableRange;
 class BuilderTest {
 
 	private VariableOrder order;
+
 	private IDDFactory factory;
 
 	@BeforeEach
@@ -33,8 +34,8 @@ class BuilderTest {
 		IDD idd = factory.builder().when("x").in(1, 10).then(true).when("x").in(11, 20).then(false).build();
 
 		assertFalse(idd.isTerminal());
-		assertTrue(Evaluate.evaluate(idd, order, Map.of("x", 5)));
-		assertFalse(Evaluate.evaluate(idd, order, Map.of("x", 15)));
+		assertTrue(Evaluate.evaluate(idd, order, Map.of("x", 5, "y", 0)));
+		assertFalse(Evaluate.evaluate(idd, order, Map.of("x", 15, "y", 0)));
 	}
 
 	@Test
@@ -49,9 +50,9 @@ class BuilderTest {
 	void testTrueOnlyBuilder() {
 		IDD idd = factory.builder().when("x").in(1, 10).then(true).build();
 
-		assertTrue(Evaluate.evaluate(idd, order, Map.of("x", 5)));
+		assertTrue(Evaluate.evaluate(idd, order, Map.of("x", 5, "y", 0)));
 		// Outside the specified interval, the gap-filling adds FALSE.
-		assertFalse(Evaluate.evaluate(idd, order, Map.of("x", 0)));
+		assertFalse(Evaluate.evaluate(idd, order, Map.of("x", 0, "y", 0)));
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package ru.snake.collection.idd.unit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,13 +34,13 @@ class EvaluateTest {
 	@Test
 	@DisplayName("Evaluate TRUE terminal")
 	void testEvaluateTrue() {
-		assertTrue(Evaluate.evaluate(IDD.TRUE, order, Map.of()));
+		assertTrue(Evaluate.evaluate(IDD.TRUE, order, Map.of("x", 0, "y", 0, "z", 0)));
 	}
 
 	@Test
 	@DisplayName("Evaluate FALSE terminal")
 	void testEvaluateFalse() {
-		assertFalse(Evaluate.evaluate(IDD.FALSE, order, Map.of()));
+		assertFalse(Evaluate.evaluate(IDD.FALSE, order, Map.of("x", 0, "y", 0, "z", 0)));
 	}
 
 	@Test
@@ -47,9 +48,9 @@ class EvaluateTest {
 	void testSimpleInterval() {
 		IDD node = factory.buildFromIntervals("x", List.of(new Edge(1, 10, factory.trueNode())));
 
-		assertTrue(Evaluate.evaluate(node, order, Map.of("x", 5)));
-		assertFalse(Evaluate.evaluate(node, order, Map.of("x", 0)));
-		assertFalse(Evaluate.evaluate(node, order, Map.of("x", 11)));
+		assertTrue(Evaluate.evaluate(node, order, Map.of("x", 5, "y", 0, "z", 0)));
+		assertFalse(Evaluate.evaluate(node, order, Map.of("x", 0, "y", 0, "z", 0)));
+		assertFalse(Evaluate.evaluate(node, order, Map.of("x", 11, "y", 0, "z", 0)));
 	}
 
 	@Test
@@ -59,9 +60,9 @@ class EvaluateTest {
 		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
 		IDD result = factory.and(xPart, yPart);
 
-		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 15)));
-		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 5)));
-		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 7, "y", 15)));
+		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 15, "z", 0)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 5, "z", 0)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 7, "y", 15, "z", 0)));
 	}
 
 	@Test
@@ -82,8 +83,8 @@ class EvaluateTest {
 			)
 		);
 
-		assertTrue(Evaluate.evaluate(node, order, Map.of("x", Integer.MIN_VALUE)));
-		assertFalse(Evaluate.evaluate(node, order, Map.of("x", Integer.MAX_VALUE)));
+		assertTrue(Evaluate.evaluate(node, order, Map.of("x", Integer.MIN_VALUE, "y", 0, "z", 0)));
+		assertFalse(Evaluate.evaluate(node, order, Map.of("x", Integer.MAX_VALUE, "y", 0, "z", 0)));
 	}
 
 	// ---- Tests with custom ranges ----
@@ -135,5 +136,52 @@ class EvaluateTest {
 		assertTrue(Evaluate.evaluate(result, rangedOrder, Map.of("port", 80, "proto", 6)));
 		assertFalse(Evaluate.evaluate(result, rangedOrder, Map.of("port", 80, "proto", 60)));
 		assertFalse(Evaluate.evaluate(result, rangedOrder, Map.of("port", 8080, "proto", 6)));
+	}
+
+	// ---- Tests for int[] overload ----
+
+	@Test
+	@DisplayName("Evaluate with int[] — terminal nodes")
+	void testIntTerminal() {
+		assertTrue(Evaluate.evaluate(IDD.TRUE, new int[0]));
+		assertFalse(Evaluate.evaluate(IDD.FALSE, new int[0]));
+	}
+
+	@Test
+	@DisplayName("Evaluate with int[] — single variable")
+	void testIntSingleVariable() {
+		IDD node = factory.buildFromIntervals("x", List.of(new Edge(1, 10, factory.trueNode())));
+
+		assertTrue(Evaluate.evaluate(node, new int[] { 5, 0, 0 }));
+		assertFalse(Evaluate.evaluate(node, new int[] { 0, 0, 0 }));
+		assertFalse(Evaluate.evaluate(node, new int[] { 11, 0, 0 }));
+	}
+
+	@Test
+	@DisplayName("Evaluate with int[] — multi-variable")
+	void testIntMultiVariable() {
+		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
+		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
+		IDD result = factory.and(xPart, yPart);
+
+		assertTrue(Evaluate.evaluate(result, new int[] { 3, 15, 0 }));
+		assertFalse(Evaluate.evaluate(result, new int[] { 3, 5, 0 }));
+		assertFalse(Evaluate.evaluate(result, new int[] { 7, 15, 0 }));
+	}
+
+	@Test
+	@DisplayName("Evaluate int[] and Map overloads produce identical results")
+	void testIntArrayMatchesMap() {
+		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
+		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
+		IDD result = factory.and(xPart, yPart);
+
+		int[][] testCases = { { 3, 15, 0 }, { 3, 5, 0 }, { 7, 15, 0 }, { 0, 0, 0 }, };
+
+		for (int[] vals : testCases) {
+			boolean mapResult = Evaluate.evaluate(result, order, Map.of("x", vals[0], "y", vals[1], "z", vals[2]));
+			boolean intResult = Evaluate.evaluate(result, vals);
+			assertEquals(mapResult, intResult, "Mismatch for [" + vals[0] + ", " + vals[1] + ", " + vals[2] + "]");
+		}
 	}
 }

@@ -103,8 +103,8 @@ class QuantifyTest {
 
 		// exists x. f should give a y-based result.
 		IDD result = Quantify.exists(factory, f, "x");
-		assertTrue(Evaluate.evaluate(result, order, Map.of("y", 15)));
-		assertFalse(Evaluate.evaluate(result, order, Map.of("y", 5)));
+		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 0, "y", 15)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 0, "y", 5)));
 	}
 
 	// ---- Tests with custom ranges ----

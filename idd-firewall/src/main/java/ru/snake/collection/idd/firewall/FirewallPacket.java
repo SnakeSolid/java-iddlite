@@ -81,6 +81,17 @@ public final class FirewallPacket {
 		);
 	}
 
+	/**
+	 * Returns an {@code int[]} suitable for zero-allocation IDD evaluation. The
+	 * array is indexed by variable order: [src_ip, dst_ip, src_port, dst_port,
+	 * proto].
+	 *
+	 * @return int array of values in FirewallVars order
+	 */
+	public int[] toIntArray() {
+		return new int[] { srcIp, dstIp, srcPort, dstPort, proto };
+	}
+
 	@Override
 	public String toString() {
 		return ("Packet[src_ip=" + toIpString(srcIp) + " dst_ip=" + toIpString(dstIp) + " src_port=" + srcPort

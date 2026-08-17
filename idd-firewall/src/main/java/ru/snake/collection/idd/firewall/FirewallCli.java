@@ -9,8 +9,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import ru.snake.collection.idd.core.IDD;
-import ru.snake.collection.idd.core.IDDFactory;
-import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.operation.Evaluate;
 
 /**
@@ -20,7 +18,7 @@ import ru.snake.collection.idd.operation.Evaluate;
  * another file or STDIN and prints the verdict for each.
  * <p>
  * <h3>Usage</h3>
- * 
+ *
  * <pre>
  * java -jar idd-firewall.jar &lt;rules-file&gt; [&lt;packets-file&gt;]
  * </pre>
@@ -63,15 +61,13 @@ public final class FirewallCli {
 			// Build IDD policy.
 			IDD policy = FirewallBuilder.buildPolicy(rules);
 
-			// Parse and evaluate packets.
-			IDDFactory factory = FirewallVars.factory();
-			VariableOrder order = factory.order();
+			// Evaluate packets.
 
 			try (Reader packetsReader = getPacketsReader(args)) {
 				List<FirewallPacket> packets = PacketParser.parse(packetsReader);
 
 				for (FirewallPacket pkt : packets) {
-					boolean accept = Evaluate.evaluate(policy, order, pkt.toAssignment());
+					boolean accept = Evaluate.evaluate(policy, pkt.toIntArray());
 					System.out.println(accept ? "ACCEPT" : "DROP");
 				}
 			}

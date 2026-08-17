@@ -103,9 +103,9 @@ class OperationTest {
 		IDD result = factory.and(f, g);
 
 		// Should be TRUE only for [5, 10].
-		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 7)));
-		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 3)));
-		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 12)));
+		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 7, "y", 0)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 0)));
+		assertFalse(Evaluate.evaluate(result, order, Map.of("x", 12, "y", 0)));
 	}
 
 	@Test
@@ -127,8 +127,8 @@ class OperationTest {
 
 		// For a few values, check evaluation matches.
 		for (int v = 0; v <= 10; v++) {
-			boolean l = Evaluate.evaluate(left, order, Map.of("x", v));
-			boolean r = Evaluate.evaluate(right, order, Map.of("x", v));
+			boolean l = Evaluate.evaluate(left, order, Map.of("x", v, "y", 0));
+			boolean r = Evaluate.evaluate(right, order, Map.of("x", v, "y", 0));
 			assertEquals(l, r, "Mismatch at x=" + v);
 		}
 	}
@@ -142,8 +142,8 @@ class OperationTest {
 		IDD right = factory.or(factory.not(a), factory.not(b));
 
 		for (int v = 0; v <= 10; v++) {
-			boolean l = Evaluate.evaluate(left, order, Map.of("x", v));
-			boolean r = Evaluate.evaluate(right, order, Map.of("x", v));
+			boolean l = Evaluate.evaluate(left, order, Map.of("x", v, "y", 0));
+			boolean r = Evaluate.evaluate(right, order, Map.of("x", v, "y", 0));
 			assertEquals(l, r, "Mismatch at x=" + v);
 		}
 	}

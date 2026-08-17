@@ -131,30 +131,22 @@ public class FirewallEvaluationBenchmark {
 	 *
 	 * <p>
 	 * Measures wall-clock throughput for N sequential evaluations. Each
-	 * iteration evaluates all 1000 packets.
+	 * iteration evaluates all 1000 packets using a reusable int[] buffer to
+	 * avoid per-packet Map allocation.
 	 */
 	@Benchmark
 	@BenchmarkMode({ Mode.AverageTime, Mode.Throughput })
 	public boolean evaluateAll() {
 		boolean acceptedCount = false;
+		int[] values = new int[5];
 
 		for (int[] pkt : packets) {
-			boolean result = Evaluate.evaluate(
-				firewall,
-				order,
-				Map.of(
-					VAR_SRC_IP,
-					pkt[0],
-					VAR_DST_IP,
-					pkt[1],
-					VAR_SRC_PORT,
-					pkt[2],
-					VAR_DST_PORT,
-					pkt[3],
-					VAR_PROTOCOL,
-					pkt[4]
-				)
-			);
+			values[0] = pkt[0];
+			values[1] = pkt[1];
+			values[2] = pkt[2];
+			values[3] = pkt[3];
+			values[4] = pkt[4];
+			boolean result = Evaluate.evaluate(firewall, values);
 
 			if (result) {
 				acceptedCount = true;
