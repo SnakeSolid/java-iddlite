@@ -7,7 +7,8 @@ import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 
 /**
- * Builds IDD firewall policies from {@link FirewallRuleSet} rule specifications.
+ * Builds IDD firewall policies from {@link FirewallRuleSet} rule
+ * specifications.
  *
  * <p>
  * Provides the shared logic used by both evaluation and compilation benchmarks:
@@ -32,7 +33,7 @@ public final class FirewallPolicyBuilder {
 	 * Builds a firewall IDD from the first {@code ruleCount} rules of the
 	 * standard rule set. Rules are combined with OR.
 	 *
-	 * @param ruleCount  number of rules to include
+	 * @param ruleCount number of rules to include
 	 * @return the compiled firewall IDD (OR of all individual rules)
 	 */
 	public IDD buildFirewall(int ruleCount) {
@@ -55,14 +56,10 @@ public final class FirewallPolicyBuilder {
 		int[] d = FirewallBenchmarkUtils.resolveIp(spec.dstIp());
 		int[] sp = FirewallBenchmarkUtils.resolvePort(spec.srcPort());
 		int[] dp = FirewallBenchmarkUtils.resolvePort(spec.dstPort());
-		int[] pr = spec.protocol() != null
-			? new int[] { spec.protocol(), spec.protocol() }
-			: new int[] { 0, 255 };
+		int[] pr = spec.protocol() != null ? new int[] { spec.protocol(), spec.protocol() } : new int[] { 0, 255 };
 
-		IDD result = factory.buildFromIntervals(
-			FirewallBenchmarkUtils.VAR_SRC_IP,
-			List.of(new Edge(s[0], s[1], factory.trueNode()))
-		);
+		IDD result = factory
+			.buildFromIntervals(FirewallBenchmarkUtils.VAR_SRC_IP, List.of(new Edge(s[0], s[1], factory.trueNode())));
 		result = factory.and(
 			result,
 			factory.buildFromIntervals(

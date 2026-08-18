@@ -5,8 +5,8 @@ package ru.snake.collection.idd.benchmark;
  *
  * <p>
  * Provides IP/CIDR resolution, port spec parsing, deterministic packet
- * generation, and the standard rule set used across evaluation and
- * compilation benchmarks.
+ * generation, and the standard rule set used across evaluation and compilation
+ * benchmarks.
  */
 public final class FirewallBenchmarkUtils {
 
@@ -79,7 +79,8 @@ public final class FirewallBenchmarkUtils {
 	// ==================================================================
 
 	/**
-	 * Resolves a port spec ("*", "80", "1024-2048") to an [low, high] int range.
+	 * Resolves a port spec ("*", "80", "1024-2048") to an [low, high] int
+	 * range.
 	 */
 	public static int[] resolvePort(String spec) {
 		if (spec == null || spec.equals("*")) {
@@ -103,7 +104,8 @@ public final class FirewallBenchmarkUtils {
 	 * (linear congruential generator). Same seeds always produce the same
 	 * packets, making benchmark results fully reproducible.
 	 *
-	 * @return 1000 packets, each encoded as [srcIp, dstIp, srcPort, dstPort, protocol]
+	 * @return 1000 packets, each encoded as [srcIp, dstIp, srcPort, dstPort,
+	 *         protocol]
 	 */
 	public static int[][] generateDeterministicPackets() {
 		DetRng rng = new DetRng(12345);

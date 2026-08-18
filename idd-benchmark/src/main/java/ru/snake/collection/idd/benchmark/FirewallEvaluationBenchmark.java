@@ -2,6 +2,7 @@ package ru.snake.collection.idd.benchmark;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -15,6 +16,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
+
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -78,18 +80,9 @@ public class FirewallEvaluationBenchmark {
 	public void setUp() {
 		order = new VariableOrder(
 			Map.ofEntries(
-				Map.entry(
-					FirewallBenchmarkUtils.VAR_SRC_PORT,
-					VariableRange.of(0, 65535)
-				),
-				Map.entry(
-					FirewallBenchmarkUtils.VAR_DST_PORT,
-					VariableRange.of(0, 65535)
-				),
-				Map.entry(
-					FirewallBenchmarkUtils.VAR_PROTOCOL,
-					VariableRange.of(0, 255)
-				)
+				Map.entry(FirewallBenchmarkUtils.VAR_SRC_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_DST_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_PROTOCOL, VariableRange.of(0, 255))
 			),
 			FirewallBenchmarkUtils.VAR_SRC_IP,
 			FirewallBenchmarkUtils.VAR_DST_IP,

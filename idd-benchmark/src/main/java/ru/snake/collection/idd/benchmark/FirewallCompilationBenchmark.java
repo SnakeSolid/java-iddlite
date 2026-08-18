@@ -2,6 +2,7 @@ package ru.snake.collection.idd.benchmark;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -14,6 +15,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -63,18 +65,9 @@ public class FirewallCompilationBenchmark {
 	public void setUp() {
 		order = new VariableOrder(
 			Map.ofEntries(
-				Map.entry(
-					FirewallBenchmarkUtils.VAR_SRC_PORT,
-					VariableRange.of(0, 65535)
-				),
-				Map.entry(
-					FirewallBenchmarkUtils.VAR_DST_PORT,
-					VariableRange.of(0, 65535)
-				),
-				Map.entry(
-					FirewallBenchmarkUtils.VAR_PROTOCOL,
-					VariableRange.of(0, 255)
-				)
+				Map.entry(FirewallBenchmarkUtils.VAR_SRC_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_DST_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_PROTOCOL, VariableRange.of(0, 255))
 			),
 			FirewallBenchmarkUtils.VAR_SRC_IP,
 			FirewallBenchmarkUtils.VAR_DST_IP,
@@ -116,25 +109,14 @@ public class FirewallCompilationBenchmark {
 	 * recursive walk — not optimized, used only to keep the result observable.
 	 */
 	private static int countNodes(IDD node) {
-		java.util.IdentityHashMap<IDD, Boolean> visited =
-			new java.util.IdentityHashMap<>();
+		java.util.IdentityHashMap<IDD, Boolean> visited = new java.util.IdentityHashMap<>();
 		return countNodesDfs(node, visited);
 	}
 
-	private static int countNodesDfs(
-		IDD node,
-		java.util.IdentityHashMap<IDD, Boolean> visited
-	) {
+	private static int countNodesDfs(IDD node, java.util.IdentityHashMap<IDD, Boolean> visited) {
 		if (visited.putIfAbsent(node, Boolean.TRUE) != null) {
 			return 0;
 		}
-		return (
-			1 +
-			node
-				.edges()
-				.stream()
-				.mapToInt(e -> countNodesDfs(e.child(), visited))
-				.sum()
-		);
+		return (1 + node.edges().stream().mapToInt(e -> countNodesDfs(e.child(), visited)).sum());
 	}
 }
