@@ -14,61 +14,46 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jmh.infra.Blackhole;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.util.VariableRange;
 
 /**
- * JMH benchmark for IDD firewall evaluation.
+ * JMH benchmark for IDD firewall compilation.
  *
  * <p>
- * Builds a firewall policy from N rules (parameterised), then evaluates a fixed
- * set of deterministic packets against the compiled IDD.
+ * Measures the cost of building a firewall IDD from N rules via successive
+ * {@code factory.or()} calls. This is where the algorithmic complexity of
+ * decision diagram construction actually lives — far more expensive than
+ * evaluation.
  *
  * <p>
- * Run with:
- *
- * <pre>
- *   java -jar idd-benchmark-1.0.0.jar
- * </pre>
- *
- * Or via Maven:
- *
- * <pre>
- *   mvn -pl idd-benchmark package
- *   java -jar idd-benchmark/target/idd-benchmark-1.0.0.jar
- * </pre>
+ * Each invocation rebuilds the firewall from scratch using a freshly created
+ * factory, so the unique table starts empty every time.
  */
 @State(Scope.Benchmark)
 @Fork(value = 2, jvmArgsAppend = { "-Xms512m", "-Xmx512m" })
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 3)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class FirewallEvaluationBenchmark {
+public class FirewallCompilationBenchmark {
 
 	// ------------------------------------------------------------------
 	// Parameters
 	// ------------------------------------------------------------------
 
 	/**
-	 * Number of rules to build the firewall from (first N rules of the standard
-	 * set).
+	 * Number of rules to compile into the firewall IDD.
 	 */
 	@Param({ "10", "30", "60", "120", "200" })
 	public int ruleCount;
 
 	// ------------------------------------------------------------------
-	// State -- shared across benchmark methods
+	// State
 	// ------------------------------------------------------------------
 
 	private VariableOrder order;
-	private IDDFactory factory;
-	private IDD firewall;
-	/** Deterministic packets: [srcIp, dstIp, srcPort, dstPort, protocol] */
-	private int[][] packets;
 
 	// ==================================================================
 	// Setup
@@ -97,11 +82,6 @@ public class FirewallEvaluationBenchmark {
 			FirewallBenchmarkUtils.VAR_DST_PORT,
 			FirewallBenchmarkUtils.VAR_PROTOCOL
 		);
-		factory = new IDDFactory(order);
-
-		FirewallPolicyBuilder builder = FirewallPolicyBuilder.of(factory);
-		firewall = builder.buildFirewall(ruleCount);
-		packets = FirewallBenchmarkUtils.generateDeterministicPackets();
 	}
 
 	// ==================================================================
@@ -109,26 +89,52 @@ public class FirewallEvaluationBenchmark {
 	// ==================================================================
 
 	/**
-	 * Evaluates the entire deterministic packet set against the firewall IDD.
+	 * Compiles a firewall IDD from N rules.
 	 *
 	 * <p>
-	 * Measures wall-clock throughput for N sequential evaluations. Each
-	 * iteration evaluates all 1000 packets using a reusable int[] buffer to
-	 * avoid per-packet Map allocation. Results are consumed via Blackhole to
-	 * prevent dead-code elimination.
+	 * Creates a fresh {@code IDDFactory} and {@code FirewallPolicyBuilder} on
+	 * each invocation so the unique table is cold. Returns the resulting IDD
+	 * node count to prevent dead-code elimination.
+	 *
+	 * @return the total number of nodes in the compiled IDD
 	 */
 	@Benchmark
 	@BenchmarkMode({ Mode.AverageTime, Mode.Throughput })
-	public void evaluateAll(Blackhole bh) {
-		int[] values = new int[5];
+	public int compileFirewall() {
+		IDDFactory factory = new IDDFactory(order);
+		FirewallPolicyBuilder builder = FirewallPolicyBuilder.of(factory);
+		IDD firewall = builder.buildFirewall(ruleCount);
+		return countNodes(firewall);
+	}
 
-		for (int[] pkt : packets) {
-			values[0] = pkt[0];
-			values[1] = pkt[1];
-			values[2] = pkt[2];
-			values[3] = pkt[3];
-			values[4] = pkt[4];
-			bh.consume(Evaluate.evaluate(firewall, values));
+	// ==================================================================
+	// Helpers
+	// ==================================================================
+
+	/**
+	 * Counts the total number of nodes in the IDD graph. This is a simple
+	 * recursive walk — not optimized, used only to keep the result observable.
+	 */
+	private static int countNodes(IDD node) {
+		java.util.IdentityHashMap<IDD, Boolean> visited =
+			new java.util.IdentityHashMap<>();
+		return countNodesDfs(node, visited);
+	}
+
+	private static int countNodesDfs(
+		IDD node,
+		java.util.IdentityHashMap<IDD, Boolean> visited
+	) {
+		if (visited.putIfAbsent(node, Boolean.TRUE) != null) {
+			return 0;
 		}
+		return (
+			1 +
+			node
+				.edges()
+				.stream()
+				.mapToInt(e -> countNodesDfs(e.child(), visited))
+				.sum()
+		);
 	}
 }
