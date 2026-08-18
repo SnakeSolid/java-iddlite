@@ -68,9 +68,7 @@ public final class IDDPrinter {
 	 * @return the formatted string
 	 */
 	public static String print(IDD f, VariableOrder order, ValueFormatter formatter) {
-		Counter counter = new Counter();
-		Map<IDD, String> labels = new IdentityHashMap<>();
-		assignLabels(f, labels, counter);
+		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
 		Set<IDD> printed = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -106,9 +104,7 @@ public final class IDDPrinter {
 	 * @return the compact string
 	 */
 	public static String printCompact(IDD f, VariableOrder order, ValueFormatter formatter) {
-		Counter counter = new Counter();
-		Map<IDD, String> labels = new IdentityHashMap<>();
-		assignLabels(f, labels, counter);
+		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
 		Set<IDD> printed = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -151,50 +147,13 @@ public final class IDDPrinter {
 	 * @return the tree diagram as a string
 	 */
 	public static String printTree(IDD f, VariableOrder order, ValueFormatter formatter) {
-		Counter counter = new Counter();
-		Map<IDD, String> labels = new IdentityHashMap<>();
-		assignLabels(f, labels, counter);
+		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
 		Set<IDD> printed = Collections.newSetFromMap(new IdentityHashMap<>());
 		printTreeNode(f, order, labels, formatter, sb, "", true, printed);
 
 		return sb.toString();
-	}
-
-	// ==================================================================
-	// Internal: label assignment (shared across all modes)
-	// ==================================================================
-
-	private static void assignLabels(IDD f, Map<IDD, String> labels, Counter counter) {
-		if (labels.containsKey(f)) {
-			return;
-		}
-
-		labels.put(f, "n" + counter.next());
-
-		for (Edge e : f.edges()) {
-			assignLabels(e.child(), labels, counter);
-		}
-	}
-
-	// ==================================================================
-	// Internal: interval formatting
-	// ==================================================================
-
-	/**
-	 * Formats an edge interval using the given formatter.
-	 *
-	 * @param varIndex  the variable index for this node's edges
-	 * @param low       interval low bound
-	 * @param high      interval high bound
-	 * @param formatter the value formatter
-	 * @return a string like {@code [10.0.0.0,10.0.0.255]} or {@code [1,5]}
-	 */
-	private static String formatInterval(int varIndex, int low, int high, ValueFormatter formatter) {
-		String lowStr = formatter.format(varIndex, low);
-		String highStr = formatter.format(varIndex, high);
-		return "[" + lowStr + "," + highStr + "]";
 	}
 
 	// ==================================================================
@@ -231,7 +190,7 @@ public final class IDDPrinter {
 
 		for (Edge e : f.edges()) {
 			String childLabel = labels.get(e.child());
-			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
+			String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
 
 			if (e.child().isTerminal()) {
 				// Always print terminals inline
@@ -282,7 +241,7 @@ public final class IDDPrinter {
 
 		for (Edge e : f.edges()) {
 			String childLabel = labels.get(e.child());
-			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
+			String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
 
 			if (e.child().isTerminal()) {
 				sb.append(" ").append(interval).append("]]->").append(childLabel);
@@ -371,7 +330,7 @@ public final class IDDPrinter {
 		for (Edge e : f.edges()) {
 			index++;
 			boolean childIsLast = index == edgeCount;
-			String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
+			String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
 			String linePrefix = childPrefix + (childIsLast ? LAST_BRANCH : BRANCH) + interval + ARROW;
 
 			if (e.child().isTerminal()) {
@@ -391,18 +350,6 @@ public final class IDDPrinter {
 				String grandChildPrefix = childPrefix + (childIsLast ? BLANK : CONTINUATION);
 				printTreeNode(e.child(), order, labels, formatter, sb, grandChildPrefix, true, printed);
 			}
-		}
-	}
-
-	/**
-	 * Simple incrementing counter for node labels.
-	 */
-	private static final class Counter {
-
-		private int value;
-
-		int next() {
-			return value++;
 		}
 	}
 }

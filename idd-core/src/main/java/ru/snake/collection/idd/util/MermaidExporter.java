@@ -107,9 +107,7 @@ public final class MermaidExporter {
 	 * @return a Mermaid diagram string
 	 */
 	public static String toString(IDD f, VariableOrder order, ValueFormatter formatter) {
-		Counter counter = new Counter();
-		Map<IDD, String> labels = new IdentityHashMap<>();
-		assignLabels(f, labels, counter);
+		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("graph TD\n");
@@ -141,7 +139,7 @@ public final class MermaidExporter {
 
 			for (Edge e : node.edges()) {
 				String toId = labels.get(e.child());
-				String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
+				String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
 				sb.append("    ")
 					.append(fromId)
 					.append(" -->|\"")
@@ -176,14 +174,12 @@ public final class MermaidExporter {
 	 * @return a Mermaid diagram string
 	 */
 	public static String toString(IDD f, ValueFormatter formatter) {
-		Counter counter = new Counter();
-		Map<IDD, String> labels = new IdentityHashMap<>();
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("graph TD\n");
 		sb.append("    direction TB\n");
 
-		visit(f, labels, sb, counter, formatter);
+		visit(f, new IdentityHashMap<>(), sb, new IDDTraversal.Counter(), formatter);
 
 		sb.append("\n");
 		sb.append("    classDef terminal fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;");
@@ -194,20 +190,13 @@ public final class MermaidExporter {
 	// Internal helpers
 	// -----------------------------------------------------------------------
 
-	private static void assignLabels(IDD f, Map<IDD, String> labels, Counter counter) {
-		if (labels.containsKey(f)) {
-			return;
-		}
-
-		labels.put(f, "n" + counter.next());
-
-		for (Edge e : f.edges()) {
-			assignLabels(e.child(), labels, counter);
-		}
-	}
-
-	private static void
-			visit(IDD f, Map<IDD, String> labels, StringBuilder sb, Counter counter, ValueFormatter formatter) {
+	private static void visit(
+		IDD f,
+		Map<IDD, String> labels,
+		StringBuilder sb,
+		IDDTraversal.Counter counter,
+		ValueFormatter formatter
+	) {
 		if (labels.containsKey(f)) {
 			return;
 		}
@@ -225,7 +214,7 @@ public final class MermaidExporter {
 			for (Edge e : f.edges()) {
 				visit(e.child(), labels, sb, counter, formatter);
 				String toId = labels.get(e.child());
-				String interval = formatInterval(varIndex, e.low(), e.high(), formatter);
+				String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
 				sb.append("    ")
 					.append(id)
 					.append(" -->|\"")
@@ -238,33 +227,9 @@ public final class MermaidExporter {
 	}
 
 	/**
-	 * Formats an edge interval using the given formatter.
-	 *
-	 * @param varIndex  the variable index for this node's edges
-	 * @param low       interval low bound
-	 * @param high      interval high bound
-	 * @param formatter the value formatter
-	 * @return a string like {@code [10.0.0.0,10.0.0.255]} or {@code [1,5]}
-	 */
-	private static String formatInterval(int varIndex, int low, int high, ValueFormatter formatter) {
-		String lowStr = escape(formatter.format(varIndex, low));
-		String highStr = escape(formatter.format(varIndex, high));
-		return "[" + lowStr + "," + highStr + "]";
-	}
-
-	/**
 	 * Escapes characters that have special meaning in Mermaid node labels.
 	 */
 	private static String escape(String s) {
 		return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-	}
-
-	private static final class Counter {
-
-		private int value;
-
-		int next() {
-			return value++;
-		}
 	}
 }
