@@ -35,11 +35,11 @@ Each operation evaluates 1,000 packets. Higher is better.
 
 | Rule Count | Score   | Error    |
 |-----------|---------|----------|
-| 10        | 30.287  | ± 0.997 |
-| 30        | 25.041  | ± 1.685 |
-| 60        | 25.415  | ± 1.730 |
-| 120       | 23.942  | ± 0.603 |
-| 200       | 20.876  | ± 0.666 |
+| 10        | 30.338  | ± 0.711 |
+| 30        | 26.317  | ± 0.350 |
+| 60        | 25.447  | ± 0.640 |
+| 120       | 24.687  | ± 0.423 |
+| 200       | 21.462  | ± 0.411 |
 
 #### Average Time (ms/op)
 
@@ -47,15 +47,15 @@ Lower is better.
 
 | Rule Count | Score   | Error   |
 |-----------|---------|--------|
-| 10        | 0.030   | ± 0.001 |
-| 30        | 0.036   | ± 0.002 |
-| 60        | 0.040   | ± 0.002 |
-| 120       | 0.039   | ± 0.003 |
-| 200       | 0.049   | ± 0.001 |
+| 10        | 0.033   | ± 0.001 |
+| 30        | 0.038   | ± 0.001 |
+| 60        | 0.039   | ± 0.002 |
+| 120       | 0.041   | ± 0.001 |
+| 200       | 0.046   | ± 0.001 |
 
 ### Interpretation
 
-Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.030–0.049 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 20.9–30.3 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark). The zero-allocation `int[]` evaluation path eliminates per-packet Map construction and per-node string-keyed lookups, delivering roughly 4× the throughput of the previous Map-based implementation.
+Throughput and latency remain essentially flat across all rule counts. Evaluating 1,000 packets takes ~0.033–0.046 ms regardless of whether the firewall was compiled from 10 or 200 rules. Throughput is consistently around 21.5–30.3 ops/ms. This confirms that the IDD compilation step absorbs the complexity of the rule set, leaving evaluation at a constant O(depth) cost where depth equals the number of variables (5 in this benchmark). The zero-allocation `int[]` evaluation path eliminates per-packet Map construction and per-node string-keyed lookups, delivering roughly 4× the throughput of the previous Map-based implementation.
 
 ## JMH benchmark: Firewall compilation
 
@@ -76,9 +76,9 @@ Higher is better. Note the super-linear scaling: doubling the rule count more th
 
 | Rule Count | Score   | Error    |
 |-----------|---------|----------|
-| 10        | 5.876   | ± 0.137 |
-| 30        | 0.175   | ± 0.005 |
-| 60        | 0.033   | ± 0.001 |
+| 10        | 6.546   | ± 0.108 |
+| 30        | 0.202   | ± 0.004 |
+| 60        | 0.036   | ± 0.001 |
 | 120       | 0.009   | ± 0.001 |
 | 200       | 0.003   | ± 0.001 |
 
@@ -86,15 +86,15 @@ Higher is better. Note the super-linear scaling: doubling the rule count more th
 
 Lower is better.
 
-| Rule Count | Score    | Error   |
-|-----------|----------|--------|
-| 10        | 0.161    | ± 0.011 |
-| 30        | 5.166    | ± 0.047 |
-| 60        | 27.969   | ± 0.578 |
-| 120       | 106.663  | ± 1.829 |
-| 200       | 285.639  | ± 5.436 |
+| Rule Count | Score    | Error      |
+|-----------|----------|-----------|
+| 10        | 0.153    | ± 0.004   |
+| 30        | 5.075    | ± 0.182   |
+| 60        | 27.468   | ± 0.933   |
+| 120       | 108.337  | ± 1.280   |
+| 200       | 285.785  | ± 16.831  |
 
-Compilation cost scales super-linearly: 10 rules take ~0.16 ms, 60 rules take ~28 ms, and 200 rules take ~286 ms. This is expected — each rule requires multiple `and` operations that merge into the growing OR tree, and the IDD must maintain canonicity via the unique table. The number of internal nodes grows combinatorially as more rules with overlapping variable ranges are merged.
+Compilation cost scales super-linearly: 10 rules take ~0.15 ms, 60 rules take ~27.5 ms, and 200 rules take ~286 ms. This is expected — each rule requires multiple `and` operations that merge into the growing OR tree, and the IDD must maintain canonicity via the unique table. The number of internal nodes grows combinatorially as more rules with overlapping variable ranges are merged.
 
 ### Running benchmarks
 
