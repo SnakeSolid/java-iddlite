@@ -18,7 +18,9 @@ public final class VariableOrder {
 
 	private final Map<String, Integer> indexBy;
 
-	private final Map<String, VariableRange> ranges;
+	private final Map<String, VariableRange> rangesByName;
+
+	private final List<VariableRange> rangeByIndex;
 
 	public VariableOrder(String... varNames) {
 		this(Map.of(), varNames);
@@ -37,7 +39,8 @@ public final class VariableOrder {
 	public VariableOrder(Map<String, VariableRange> ranges, String... varNames) {
 		this.names = new ArrayList<>();
 		this.indexBy = new HashMap<>();
-		this.ranges = new HashMap<>(Map.copyOf(ranges));
+		this.rangesByName = new HashMap<>(ranges);
+		this.rangeByIndex = new ArrayList<>();
 
 		for (String name : varNames) {
 			if (indexBy.containsKey(name)) {
@@ -46,6 +49,9 @@ public final class VariableOrder {
 
 			indexBy.put(name, names.size());
 			names.add(name);
+
+			VariableRange r = ranges.get(name);
+			rangeByIndex.add(r != null ? r : VariableRange.fullRange());
 		}
 	}
 
@@ -95,7 +101,7 @@ public final class VariableOrder {
 			throw new IllegalArgumentException("Unknown variable: " + name);
 		}
 
-		VariableRange r = ranges.get(name);
+		VariableRange r = rangesByName.get(name);
 
 		if (r == null) {
 			return VariableRange.fullRange();
@@ -107,14 +113,19 @@ public final class VariableOrder {
 	/**
 	 * Returns the valid range for the variable at the given index. Variables
 	 * without an explicit range default to the full integer range.
+	 * <p>
+	 * This is an O(1) direct list lookup — no string indirection.
 	 *
 	 * @param index the variable index
 	 * @return the valid range for this variable
 	 * @throws IllegalArgumentException if the index is out of range
 	 */
 	public VariableRange range(int index) {
-		String name = name(index);
-		return range(name);
+		if (index < 0 || index >= rangeByIndex.size()) {
+			throw new IllegalArgumentException("Variable index out of range: " + index);
+		}
+
+		return rangeByIndex.get(index);
 	}
 
 	/**
