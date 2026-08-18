@@ -6,7 +6,6 @@
 |---|---|---|
 | `IDD` | `int variable`, `List<Edge> edges`, `int hashCode` | ~40 bytes (plus list + edges) |
 | `Edge` | `int low`, `int high`, `IDD child` | ~28 bytes |
-| `Interval` | `int low`, `int high` | ~20 bytes (created on-demand) |
 | `VariableOrder` | `List<String>`, `Map<String, Integer>` | Depends on variable count |
 
 ## Unique table

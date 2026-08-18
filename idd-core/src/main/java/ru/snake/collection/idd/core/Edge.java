@@ -2,8 +2,6 @@ package ru.snake.collection.idd.core;
 
 import java.util.Objects;
 
-import ru.snake.collection.idd.util.Interval;
-
 /**
  * Represents an edge in an IDD node: a mapping from an interval to a child IDD.
  * Immutable and thread-safe.
@@ -18,7 +16,9 @@ public final class Edge {
 
 	public Edge(int low, int high, IDD child) {
 		if (low > high) {
-			throw new IllegalArgumentException("low (" + low + ") > high (" + high + ")");
+			throw new IllegalArgumentException(
+				"low (" + low + ") > high (" + high + ")"
+			);
 		}
 
 		if (child == null) {
@@ -40,10 +40,6 @@ public final class Edge {
 
 	public IDD child() {
 		return child;
-	}
-
-	public Interval interval() {
-		return new Interval(low, high);
 	}
 
 	/**

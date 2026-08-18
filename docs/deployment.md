@@ -135,7 +135,7 @@ System.out.println(IDDPrinter.print(rootIdd, order));
 
 ## Thread safety
 
-- Core classes (`IDD`, `Edge`, `Interval`, `VariableOrder`) are fully thread-safe (immutable).
+- Core classes (`IDD`, `Edge`, `VariableOrder`) are fully thread-safe (immutable).
 - Operation classes (`Apply`, `Evaluate`, `Quantify`, `Restrict`) are stateless — thread-safe.
 - **`IDDFactory` is NOT thread-safe** — it uses a `WeakHashMap`. Share a factory per thread, or use external synchronisation.
 

@@ -11,7 +11,7 @@ The project is a **multi-module Maven build**:
 
 ## Core design principles
 
-1. **Immutability** — all core classes (`IDD`, `Edge`, `Interval`, `VariableOrder`, `VariableRange`) are `final` and immutable.
+1. **Immutability** — all core classes (`IDD`, `Edge`, `VariableOrder`, `VariableRange`) are `final` and immutable.
 2. **Hash-consing** — the `IDDFactory` maintains a unique table (`WeakHashMap`) so structurally identical nodes share the same object identity.
 3. **Reduction** — nodes with a single edge covering the full variable domain are eliminated, returning the child directly.
 4. **Canonical representation** — thanks to hash-consing + reduction, two IDDs represent the same function iff they are `==` (reference-equal).
@@ -39,7 +39,6 @@ graph TD
     end
 
     subgraph Utilities
-        Interval["Interval"]
         VariableRange["VariableRange"]
         ValueFormatter["ValueFormatter"]
         Formatters["Formatters"]

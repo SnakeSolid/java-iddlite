@@ -55,7 +55,6 @@ All core classes are `final` with `private final` fields. No setters exist.
 |---|---|
 | `IDD` | immutable |
 | `Edge` | immutable |
-| `Interval` | immutable |
 | `VariableRange` | immutable |
 | `VariableOrder` | immutable |
 | `Operation` | immutable (enum) |
@@ -162,7 +161,7 @@ public boolean equals(Object o) {
 
 ### Other classes — structural equality
 
-`Edge`, `Interval`, `VariableRange`, `NodeKey`, `ApplyKey` implement structural `equals`/`hashCode` using `Objects.hash()` or the `31*h + field` pattern. Child references in `Edge` and `NodeKey` use `System.identityHashCode()` (reference-based) rather than structural hash, because `IDD` equality is by reference.
+`Edge`, `VariableRange`, `NodeKey`, `ApplyKey` implement structural `equals`/`hashCode` using `Objects.hash()` or the `31*h + field` pattern. Child references in `Edge` and `NodeKey` use `System.identityHashCode()` (reference-based) rather than structural hash, because `IDD` equality is by reference.
 
 ## Comments and Javadoc
 

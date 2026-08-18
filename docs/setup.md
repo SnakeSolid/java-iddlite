@@ -65,12 +65,12 @@ iddlite/
 │       │   │   ├── Quantify.java
 │       │   │   └── Restrict.java
 │       │   └── util/               # Utilities
-│       │       ├── Interval.java
 │       │       ├── VariableRange.java
 │       │       ├── ValueFormatter.java
 │       │       ├── Formatters.java
 │       │       ├── MermaidExporter.java
-│       │       └── IDDPrinter.java
+│       │       ├── IDDPrinter.java
+│       │       └── IDDTraversal.java
 │       └── test/java/ru/snake/collection/idd/
 │           ├── unit/               # Unit tests (11 classes, 138 tests)
 │           └── integration/        # Integration / stress tests (4 classes, 22 tests)

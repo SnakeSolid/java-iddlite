@@ -17,7 +17,6 @@
 │   ├── QuantifyTest    — Exists, forall, non-present variables, ranged quantification (11 tests)
 │   ├── RestrictTest    — Restrict terminals, correct child, recurse, ranged restriction (6 tests)
 │   ├── BuilderTest     — Fluent builder, canonicity, empty builder, ranged builder (6 tests)
-│   ├── IntervalTest    — Interval invariants, contains, adjacency (5 tests)
 │   ├── IDDPrinterTest  — Print modes, shared nodes, terminal inlining, formatters, tree output, ip/protocol/port formatting (20 tests)
 │   └── VariableOrderTest — Order basics, duplicates, bounds, compare, range lookup (13 tests)
 └── integration/        — Integration and stress tests
