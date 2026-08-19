@@ -58,9 +58,10 @@ iddlite/
 │       │   │   ├── Edge.java
 │       │   │   ├── IDDFactory.java
 │       │   │   ├── IDDBuilder.java
-│       │   │   └── VariableOrder.java
+│       │   │   ├── VariableOrder.java
+│       │   │   ├── VariableRanges.java
+│       │   │   └── Operation.java
 │       │   ├── operation/          # IDD operations
-│       │   │   ├── Apply.java
 │       │   │   ├── Evaluate.java
 │       │   │   ├── Quantify.java
 │       │   │   └── Restrict.java
@@ -72,8 +73,8 @@ iddlite/
 │       │       ├── IDDPrinter.java
 │       │       └── IDDTraversal.java
 │       └── test/java/ru/snake/collection/idd/
-│           ├── unit/               # Unit tests (11 classes, 138 tests)
-│           └── integration/        # Integration / stress tests (4 classes, 22 tests)
+│           ├── unit/               # Unit tests (11 classes, 124 tests)
+│           └── integration/        # Integration / stress tests (3 classes, 16 tests)
 ├── idd-firewall/                   # Firewall CLI module
 │   ├── pom.xml
 │   ├── rules.txt                   # Sample firewall rules
@@ -96,7 +97,11 @@ iddlite/
 └── idd-benchmark/                  # JMH benchmark module
     ├── pom.xml
     └── src/main/java/ru/snake/collection/idd/benchmark/
-        └── FirewallEvaluationBenchmark.java
+        ├── FirewallEvaluationBenchmark.java
+        ├── FirewallCompilationBenchmark.java
+        ├── FirewallBenchmarkUtils.java
+        ├── FirewallPolicyBuilder.java
+        └── FirewallRuleSet.java
 ```
 
 ## Useful Maven commands

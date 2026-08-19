@@ -87,12 +87,15 @@ IDD rule1 = factory.buildFromIntervals("src_ip", List.of(
 // 4. Combine
 IDD policy = factory.and(rule1, rule2);
 
-// 5. Evaluate
+// 5. Evaluate (Map-based — convenient)
 boolean allowed = Evaluate.evaluate(policy, order, Map.of(
     "src_ip", 10_000_050,
     "dst_ip", 20_000_000,
     "port", 8080
 ));
+
+// 5b. Evaluate (int[] — zero-allocation, high-throughput)
+boolean allowed = Evaluate.evaluate(policy, new int[] { 10_000_050, 20_000_000, 8080 });
 ```
 
 ## Visualization
@@ -136,7 +139,7 @@ System.out.println(IDDPrinter.print(rootIdd, order));
 ## Thread safety
 
 - Core classes (`IDD`, `Edge`, `VariableOrder`) are fully thread-safe (immutable).
-- Operation classes (`Apply`, `Evaluate`, `Quantify`, `Restrict`) are stateless — thread-safe.
+- Operation classes (`Evaluate`, `Quantify`, `Restrict`) are stateless — thread-safe.
 - **`IDDFactory` is NOT thread-safe** — it uses a `WeakHashMap`. Share a factory per thread, or use external synchronisation.
 
 ## Performance tips

@@ -62,10 +62,11 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 | Edge normalisation | Gaps filled with FALSE edges; adjacent same-child edges merged |
 | Reduction | Nodes with a single full-range edge are eliminated |
 | Variable ranges | Custom valid ranges per variable (e.g., ports: 0..65535) |
-| Boolean operations | AND, OR, NOT, XOR, IMPLIES |
+| Boolean operations | AND, OR, NOT, XOR, IMPLIES (via `IDDFactory` instance methods) |
 | Quantification | Existential (`exists`) and universal (`forall`) |
 | Restriction / cofactoring | Fix a variable to a concrete value |
-| Visualization | Mermaid diagram export + pretty-printer |
+| Fast evaluation | O(depth) walk — `int[]` path avoids per-call Map allocation |
+| Visualization | Mermaid diagram export + pretty-printer (3 modes) |
 
 ## Packages
 
@@ -75,6 +76,7 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 | `ru.snake.collection.idd.operation` | `Evaluate`, `Quantify`, `Restrict` |
 | `ru.snake.collection.idd.util` | `VariableRange`, `ValueFormatter`, `Formatters`, `MermaidExporter`, `IDDPrinter`, `IDDTraversal` |
 | `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `FirewallRule`, `FirewallPacket`, `FirewallVars`, `IpUtil`, `PacketParser` |
+| `ru.snake.collection.idd.benchmark` | `FirewallEvaluationBenchmark`, `FirewallCompilationBenchmark`, `FirewallBenchmarkUtils`, `FirewallPolicyBuilder`, `FirewallRuleSet` |
 
 ## Building
 

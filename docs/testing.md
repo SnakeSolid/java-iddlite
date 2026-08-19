@@ -10,20 +10,20 @@
 ```src/test/java/ru/snake/collection/idd/
 ├── unit/               — Unit tests for individual components
 │   ├── VariableRangeTest — Valid range construction, singleton, contains, equality (12 tests)
+│   ├── VariableRangesTest — Default ranges, custom ranges, name/index lookup, partial maps (7 tests)
 │   ├── IDDTest         — Node creation, hash-consing, reduction, range-aware gap filling (17 tests)
 │   ├── EdgeTest        — Edge invariants, equality, findEdge (4 tests)
-│   ├── ApplyTest       — Boolean operations, De Morgan, cross-variable AND, ranged operations (19 tests)
-│   ├── EvaluateTest    — Evaluation of terminals, intervals, multi-variable, ranged evaluation (9 tests)
+│   ├── OperationTest   — Boolean operations (AND, OR, XOR, IMPLIES, NOT), De Morgan, cross-variable AND, ranged operations (19 tests)
+│   ├── EvaluateTest    — Evaluation of terminals, intervals, multi-variable, ranged evaluation (13 tests)
 │   ├── QuantifyTest    — Exists, forall, non-present variables, ranged quantification (11 tests)
 │   ├── RestrictTest    — Restrict terminals, correct child, recurse, ranged restriction (6 tests)
 │   ├── BuilderTest     — Fluent builder, canonicity, empty builder, ranged builder (6 tests)
 │   ├── IDDPrinterTest  — Print modes, shared nodes, terminal inlining, formatters, tree output, ip/protocol/port formatting (20 tests)
-│   └── VariableOrderTest — Order basics, duplicates, bounds, compare, range lookup (13 tests)
+│   └── VariableOrderTest — Order basics, duplicates, bounds, compare (9 tests)
 └── integration/        — Integration and stress tests
     ├── ExtremeIntervalTest — MIN/MAX boundary correctness (7 tests)
-    ├── StressTest        — Large-scale firewall simulation (3 tests)
-    ├── FirewallRuleTest  — 60-rule firewall with 5 variables (3 tests)
-    └── RangedFirewallTest — Firewall with port/protocol ranges, quantify, restrict, performance (9 tests)
+    ├── StressTest        — Large-scale firewall simulation (2 tests)
+    └── RangedFirewallTest — Firewall with port/protocol ranges, quantify, restrict, performance (7 tests)
 ```
 
 ### Firewall module tests
@@ -31,19 +31,19 @@
 ```
 idd-firewall/src/test/java/ru/snake/collection/idd/firewall/
 ├── FirewallBuilderTest  — Rule compilation, first-match-wins, realistic firewalls (7 tests)
-├── FirewallParserTest   — Rule parsing, CIDR, comments, error handling (14 tests)
-├── IpUtilTest           — IP parsing, CIDR ranges, intervals, validation (12 tests)
-└── PacketParserTest     — Packet parsing, protocol names, error handling (8 tests)
+├── FirewallParserTest   — Rule parsing, CIDR, comments, error handling (12 tests)
+├── IpUtilTest           — IP parsing, CIDR ranges, intervals, validation (13 tests)
+└── PacketParserTest     — Packet parsing, protocol names, error handling (7 tests)
 ```
 
 ## Coverage summary
 
 | Category | Tests |
 |---|---|
-| **Core unit tests** | 138 |
-| **Core integration tests** | 22 |
-| **Firewall tests** | 41 |
-| **Total** | 177 |
+| **Core unit tests** | 124 |
+| **Core integration tests** | 16 |
+| **Firewall tests** | 39 |
+| **Total** | 179 |
 
 ## Testing patterns used
 
@@ -67,7 +67,6 @@ for (int v = 0; v <= 10; v++) {
 
 ### Stress tests
 
-- **Firewall simulation**: 50 random rules, 50,000 evaluations — must complete under 30 seconds.
 - **Many boundaries**: 30 random intervals combined with OR, then ANDed — verifies apply scaling.
 - **NOT stress**: 20 random intervals, then verify `f OR NOT(f) == TRUE`.
 
@@ -90,7 +89,7 @@ Tests with custom `VariableRange` verify:
 
 ```bash
 ./mvnw test                          # All tests
-./mvnw test -Dtest=ApplyTest         # Single test class
+./mvnw test -Dtest=OperationTest     # Single test class
 ./mvnw test -Dtest="*Stress*"        # Pattern match
 ```
 

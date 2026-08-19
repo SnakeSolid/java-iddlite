@@ -29,7 +29,6 @@ graph TD
         IDDBuilder["IDDBuilder"]
         VariableOrder["VariableOrder"]
         VariableRanges["VariableRanges"]
-        VariableRange["VariableRange"]
         Operation["Operation (enum)"]
     end
 
@@ -40,11 +39,12 @@ graph TD
     end
 
     subgraph Utilities
-        VariableRange["VariableRange"]
         ValueFormatter["ValueFormatter"]
         Formatters["Formatters"]
         MermaidExporter["MermaidExporter"]
         IDDPrinter["IDDPrinter\n(print, printTree,\nprintCompact)"]
+        VariableRange["VariableRange"]
+        IDDTraversal["IDDTraversal"]
     end
 
     IDDBuilder --> IDDFactory
@@ -59,6 +59,10 @@ graph TD
     IDDPrinter --> ValueFormatter
     IDDPrinter --> Formatters
     IDDPrinter --> VariableOrder
+    IDDPrinter --> IDDTraversal
+
+    MermaidExporter --> IDDTraversal
+    MermaidExporter --> ValueFormatter
 
     Evaluate --> IDD
     Evaluate --> VariableOrder
@@ -126,7 +130,12 @@ Previously a separate class with static methods that created a new `Apply` insta
 
 ### `Evaluate`
 
-Traces a path through the IDD given a variable-to-value assignment. Throws `IllegalArgumentException` if a required variable is missing.
+Traces a path through the IDD given a variable-to-value assignment. Two overloads:
+
+- **evaluate(f, int[] values)** — zero-allocation path using an array indexed by variable order position. Suitable for high-throughput evaluation.
+- **evaluate(f, order, assignment)** — converts the map to an int array once at entry, then delegates to the array overload.
+
+Throws `IllegalArgumentException` if a required variable is missing from the assignment.
 
 ### `Quantify`
 

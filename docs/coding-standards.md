@@ -84,7 +84,7 @@ public final class Evaluate {
 }
 ```
 
-Apply operations (`and`, `or`, `xor`, `implies`, `not`) are instance methods on `IDDFactory` rather than a separate `Apply` class. This avoids the per-call cache allocation problem: every static call previously created a new `Apply` instance with a fresh, useless `WeakHashMap`.
+All Boolean apply operations (`and`, `or`, `xor`, `implies`, `not`) are instance methods on `IDDFactory` rather than a separate `Apply` class. This avoids the per-call cache allocation problem: every static call previously created a new `Apply` instance with a fresh, useless `WeakHashMap`.
 
 ### Accessor naming
 
@@ -162,7 +162,7 @@ public boolean equals(Object o) {
 
 ### Other classes — structural equality
 
-`Edge`, `VariableRange`, `NodeKey`, `ApplyKey` implement structural `equals`/`hashCode` using `Objects.hash()` or the `31*h + field` pattern. Child references in `Edge` and `NodeKey` use `System.identityHashCode()` (reference-based) rather than structural hash, because `IDD` equality is by reference.
+`Edge`, `VariableRange`, `NodeKey`, `OperationKey` implement structural `equals`/`hashCode` using `Objects.hash()` or the `31*h + field` pattern. Child references in `Edge` and `NodeKey` use `System.identityHashCode()` (reference-based) rather than structural hash, because `IDD` equality is by reference.
 
 ## Comments and Javadoc
 
