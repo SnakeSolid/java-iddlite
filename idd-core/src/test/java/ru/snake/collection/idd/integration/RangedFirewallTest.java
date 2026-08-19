@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
@@ -41,27 +43,13 @@ class RangedFirewallTest {
 		IDDFactory factory = new IDDFactory(order, ranges);
 
 		// Rule 1: TCP (6) to port 80
-		IDD rule1 = factory.builder().when("proto").in(6, 6).then(true).when("dst_port").in(80, 80).then(true).build();
+		IDD rule1 = factory.builder().when("proto").in(6, 6).when("dst_port").in(80, 80).then(true).build();
 
 		// Rule 2: TCP to port 443
-		IDD rule2 = factory.builder()
-			.when("proto")
-			.in(6, 6)
-			.then(true)
-			.when("dst_port")
-			.in(443, 443)
-			.then(true)
-			.build();
+		IDD rule2 = factory.builder().when("proto").in(6, 6).when("dst_port").in(443, 443).then(true).build();
 
 		// Rule 3: UDP (17) to ports 53 (DNS)
-		IDD rule3 = factory.builder()
-			.when("proto")
-			.in(17, 17)
-			.then(true)
-			.when("dst_port")
-			.in(53, 53)
-			.then(true)
-			.build();
+		IDD rule3 = factory.builder().when("proto").in(17, 17).when("dst_port").in(53, 53).then(true).build();
 
 		// Combined policy: any of the rules
 		IDD policy = factory.or(factory.or(rule1, rule2), rule3);
@@ -95,7 +83,7 @@ class RangedFirewallTest {
 		);
 		IDDFactory factory = new IDDFactory(order, ranges);
 
-		IDD policy = factory.builder().when("proto").in(6, 6).then(true).when("port").in(80, 443).then(true).build();
+		IDD policy = factory.builder().when("proto").in(6, 6).when("port").in(80, 443).then(true).build();
 
 		// Restrict proto=6 => should simplify to port-based rule
 		IDD restricted = Restrict.restrict(factory, policy, "proto", 6);
@@ -246,36 +234,15 @@ class RangedFirewallTest {
 		IDD policy = factory.falseNode();
 
 		// Allow TCP to common web ports
-		IDD webRule = factory.builder()
-			.when("proto")
-			.in(6, 6)
-			.then(true)
-			.when("dst_port")
-			.in(80, 443)
-			.then(true)
-			.build();
+		IDD webRule = factory.builder().when("proto").in(6, 6).when("dst_port").in(80, 443).then(true).build();
 		policy = factory.or(policy, webRule);
 
 		// Allow UDP DNS
-		IDD dnsRule = factory.builder()
-			.when("proto")
-			.in(17, 17)
-			.then(true)
-			.when("dst_port")
-			.in(53, 53)
-			.then(true)
-			.build();
+		IDD dnsRule = factory.builder().when("proto").in(17, 17).when("dst_port").in(53, 53).then(true).build();
 		policy = factory.or(policy, dnsRule);
 
 		// Allow TCP SSH
-		IDD sshRule = factory.builder()
-			.when("proto")
-			.in(6, 6)
-			.then(true)
-			.when("dst_port")
-			.in(22, 22)
-			.then(true)
-			.build();
+		IDD sshRule = factory.builder().when("proto").in(6, 6).when("dst_port").in(22, 22).then(true).build();
 		policy = factory.or(policy, sshRule);
 
 		// Evaluate 50000 packets
