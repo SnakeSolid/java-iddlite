@@ -20,6 +20,7 @@ import org.openjdk.jmh.infra.Blackhole;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.util.VariableRange;
 
@@ -66,9 +67,10 @@ public class FirewallEvaluationBenchmark {
 	// State -- shared across benchmark methods
 	// ------------------------------------------------------------------
 
-	private VariableOrder order;
 	private IDDFactory factory;
+
 	private IDD firewall;
+
 	/** Deterministic packets: [srcIp, dstIp, srcPort, dstPort, protocol] */
 	private int[][] packets;
 
@@ -78,19 +80,22 @@ public class FirewallEvaluationBenchmark {
 
 	@Setup(Level.Trial)
 	public void setUp() {
-		order = new VariableOrder(
-			Map.ofEntries(
-				Map.entry(FirewallBenchmarkUtils.VAR_SRC_PORT, VariableRange.of(0, 65535)),
-				Map.entry(FirewallBenchmarkUtils.VAR_DST_PORT, VariableRange.of(0, 65535)),
-				Map.entry(FirewallBenchmarkUtils.VAR_PROTOCOL, VariableRange.of(0, 255))
-			),
+		VariableOrder order = new VariableOrder(
 			FirewallBenchmarkUtils.VAR_SRC_IP,
 			FirewallBenchmarkUtils.VAR_DST_IP,
 			FirewallBenchmarkUtils.VAR_SRC_PORT,
 			FirewallBenchmarkUtils.VAR_DST_PORT,
 			FirewallBenchmarkUtils.VAR_PROTOCOL
 		);
-		factory = new IDDFactory(order);
+		VariableRanges ranges = new VariableRanges(
+			Map.ofEntries(
+				Map.entry(FirewallBenchmarkUtils.VAR_SRC_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_DST_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_PROTOCOL, VariableRange.of(0, 255))
+			),
+			order
+		);
+		factory = new IDDFactory(order, ranges);
 
 		FirewallPolicyBuilder builder = FirewallPolicyBuilder.of(factory);
 		firewall = builder.buildFirewall(ruleCount);

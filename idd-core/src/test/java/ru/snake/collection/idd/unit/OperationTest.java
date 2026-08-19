@@ -7,15 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.util.VariableRange;
 
@@ -98,8 +97,14 @@ class OperationTest {
 	@Test
 	@DisplayName("AND of overlapping intervals: evaluation consistency")
 	void testAndIntervals() {
-		IDD f = factory.buildFromIntervals("x", List.of(new Edge(1, 10, factory.trueNode())));
-		IDD g = factory.buildFromIntervals("x", List.of(new Edge(5, 15, factory.trueNode())));
+		IDD f = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 10, factory.trueNode()))
+		);
+		IDD g = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(5, 15, factory.trueNode()))
+		);
 		IDD result = factory.and(f, g);
 
 		// Should be TRUE only for [5, 10].
@@ -111,7 +116,10 @@ class OperationTest {
 	@Test
 	@DisplayName("OR of complements yields TRUE")
 	void testOrComplementTrue() {
-		IDD f = factory.buildFromIntervals("x", List.of(new Edge(1, 10, factory.trueNode())));
+		IDD f = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 10, factory.trueNode()))
+		);
 		IDD notF = factory.not(f);
 		IDD result = factory.or(f, notF);
 		assertSame(IDD.TRUE, result);
@@ -120,8 +128,14 @@ class OperationTest {
 	@Test
 	@DisplayName("De Morgan: NOT(A OR B) == NOT(A) AND NOT(B)")
 	void testDeMorgan1() {
-		IDD a = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
-		IDD b = factory.buildFromIntervals("x", List.of(new Edge(3, 7, factory.trueNode())));
+		IDD a = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 5, factory.trueNode()))
+		);
+		IDD b = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(3, 7, factory.trueNode()))
+		);
 		IDD left = factory.not(factory.or(a, b));
 		IDD right = factory.and(factory.not(a), factory.not(b));
 
@@ -136,8 +150,14 @@ class OperationTest {
 	@Test
 	@DisplayName("De Morgan: NOT(A AND B) == NOT(A) OR NOT(B)")
 	void testDeMorgan2() {
-		IDD a = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
-		IDD b = factory.buildFromIntervals("x", List.of(new Edge(3, 7, factory.trueNode())));
+		IDD a = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 5, factory.trueNode()))
+		);
+		IDD b = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(3, 7, factory.trueNode()))
+		);
 		IDD left = factory.not(factory.and(a, b));
 		IDD right = factory.or(factory.not(a), factory.not(b));
 
@@ -151,8 +171,14 @@ class OperationTest {
 	@Test
 	@DisplayName("AND across two variables: evaluation consistency")
 	void testAndTwoVariables() {
-		IDD f = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
-		IDD g = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
+		IDD f = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 5, factory.trueNode()))
+		);
+		IDD g = factory.buildFromIntervals(
+			"y",
+			List.of(new Edge(10, 20, factory.trueNode()))
+		);
 		IDD result = factory.and(f, g);
 
 		assertTrue(Evaluate.evaluate(result, order, Map.of("x", 3, "y", 15)));
@@ -165,28 +191,47 @@ class OperationTest {
 	@Test
 	@DisplayName("AND with custom range: overlapping port intervals")
 	void testAndWithCustomRange() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD f = rangedFactory.buildFromIntervals("port", List.of(new Edge(80, 443, rangedFactory.trueNode())));
-		IDD g = rangedFactory.buildFromIntervals("port", List.of(new Edge(400, 8080, rangedFactory.trueNode())));
+		IDD f = rangedFactory.buildFromIntervals(
+			"port",
+			List.of(new Edge(80, 443, rangedFactory.trueNode()))
+		);
+		IDD g = rangedFactory.buildFromIntervals(
+			"port",
+			List.of(new Edge(400, 8080, rangedFactory.trueNode()))
+		);
 		IDD result = rangedFactory.and(f, g);
 
 		// Overlap is [400, 443].
 		assertTrue(Evaluate.evaluate(result, rangedOrder, Map.of("port", 443)));
-		assertFalse(Evaluate.evaluate(result, rangedOrder, Map.of("port", 399)));
-		assertFalse(Evaluate.evaluate(result, rangedOrder, Map.of("port", 444)));
+		assertFalse(
+			Evaluate.evaluate(result, rangedOrder, Map.of("port", 399))
+		);
+		assertFalse(
+			Evaluate.evaluate(result, rangedOrder, Map.of("port", 444))
+		);
 	}
 
 	@Test
 	@DisplayName("NOT with custom range: complement is correct")
 	void testNotWithCustomRange() {
-		Map<String, VariableRange> ranges = Map.of("proto", VariableRange.of(0, 255));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "proto");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("proto");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("proto", VariableRange.of(0, 255)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD f = rangedFactory.buildFromIntervals("proto", List.of(new Edge(6, 17, rangedFactory.trueNode())));
+		IDD f = rangedFactory.buildFromIntervals(
+			"proto",
+			List.of(new Edge(6, 17, rangedFactory.trueNode()))
+		);
 		IDD notF = rangedFactory.not(f);
 
 		// f is TRUE for [6,17], FALSE elsewhere in [0,255].
@@ -200,11 +245,17 @@ class OperationTest {
 	@Test
 	@DisplayName("OR of complements with custom range yields TRUE")
 	void testOrComplementCustomRange() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD f = rangedFactory.buildFromIntervals("port", List.of(new Edge(100, 200, rangedFactory.trueNode())));
+		IDD f = rangedFactory.buildFromIntervals(
+			"port",
+			List.of(new Edge(100, 200, rangedFactory.trueNode()))
+		);
 		IDD notF = rangedFactory.not(f);
 		IDD result = rangedFactory.or(f, notF);
 		assertSame(IDD.TRUE, result);
@@ -213,17 +264,48 @@ class OperationTest {
 	@Test
 	@DisplayName("AND across two ranged variables")
 	void testAndTwoRangedVariables() {
-		Map<String, VariableRange> ranges = Map
-			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port", "proto");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port", "proto");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of(
+				"port",
+				VariableRange.of(0, 65535),
+				"proto",
+				VariableRange.of(0, 255)
+			),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD portPart = rangedFactory.buildFromIntervals("port", List.of(new Edge(80, 443, rangedFactory.trueNode())));
-		IDD protoPart = rangedFactory.buildFromIntervals("proto", List.of(new Edge(6, 6, rangedFactory.trueNode())));
+		IDD portPart = rangedFactory.buildFromIntervals(
+			"port",
+			List.of(new Edge(80, 443, rangedFactory.trueNode()))
+		);
+		IDD protoPart = rangedFactory.buildFromIntervals(
+			"proto",
+			List.of(new Edge(6, 6, rangedFactory.trueNode()))
+		);
 		IDD combined = rangedFactory.and(portPart, protoPart);
 
-		assertTrue(Evaluate.evaluate(combined, rangedOrder, Map.of("port", 80, "proto", 6)));
-		assertFalse(Evaluate.evaluate(combined, rangedOrder, Map.of("port", 80, "proto", 17)));
-		assertFalse(Evaluate.evaluate(combined, rangedOrder, Map.of("port", 8080, "proto", 6)));
+		assertTrue(
+			Evaluate.evaluate(
+				combined,
+				rangedOrder,
+				Map.of("port", 80, "proto", 6)
+			)
+		);
+		assertFalse(
+			Evaluate.evaluate(
+				combined,
+				rangedOrder,
+				Map.of("port", 80, "proto", 17)
+			)
+		);
+		assertFalse(
+			Evaluate.evaluate(
+				combined,
+				rangedOrder,
+				Map.of("port", 8080, "proto", 6)
+			)
+		);
 	}
 }

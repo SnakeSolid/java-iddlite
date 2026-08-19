@@ -4,6 +4,7 @@ import java.util.Map;
 
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.util.VariableRange;
 
 /**
@@ -83,10 +84,17 @@ public final class FirewallVars {
 
 	/**
 	 * Creates a new {@link VariableOrder} with the predefined firewall
-	 * variables and ranges.
+	 * variables.
 	 */
 	public static VariableOrder order() {
-		return new VariableOrder(ranges(), variableNames());
+		return new VariableOrder(variableNames());
+	}
+
+	/**
+	 * Creates a new {@link VariableRanges} with the predefined firewall ranges.
+	 */
+	public static VariableRanges variableRanges() {
+		return new VariableRanges(ranges(), order());
 	}
 
 	/**
@@ -94,6 +102,7 @@ public final class FirewallVars {
 	 * order, and ranges.
 	 */
 	public static IDDFactory factory() {
-		return new IDDFactory(order());
+		VariableOrder varOrder = order();
+		return new IDDFactory(varOrder, new VariableRanges(ranges(), varOrder));
 	}
 }

@@ -1,20 +1,20 @@
 package ru.snake.collection.idd.unit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.operation.Quantify;
 import ru.snake.collection.idd.util.VariableRange;
@@ -43,9 +43,15 @@ class QuantifyTest {
 	void testExistsEliminates() {
 		// x in [1,10] AND y in [5,6]
 		// Build y node first.
-		IDD yNode = factory.buildFromIntervals("y", List.of(new Edge(5, 6, factory.trueNode())));
+		IDD yNode = factory.buildFromIntervals(
+			"y",
+			List.of(new Edge(5, 6, factory.trueNode()))
+		);
 		// Build x node with yNode and FALSE children.
-		IDD xNode = factory.getNode(0, List.of(new Edge(1, 10, yNode), new Edge(11, 20, IDD.FALSE)));
+		IDD xNode = factory.getNode(
+			0,
+			List.of(new Edge(1, 10, yNode), new Edge(11, 20, IDD.FALSE))
+		);
 
 		// exists x: OR of children {yNode, FALSE} = yNode.
 		IDD result = Quantify.exists(factory, xNode, "x");
@@ -55,7 +61,10 @@ class QuantifyTest {
 	@Test
 	@DisplayName("Exists on non-present variable returns the same IDD")
 	void testExistsNonPresent() {
-		IDD node = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
+		IDD node = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 5, factory.trueNode()))
+		);
 		assertSame(node, Quantify.exists(factory, node, "y"));
 	}
 
@@ -63,7 +72,10 @@ class QuantifyTest {
 	@DisplayName("Forall with full-TRUE range returns TRUE")
 	void testForallFullTrue() {
 		// Every edge points to TRUE => AND of {TRUE} = TRUE.
-		IDD node = factory.getNode(0, List.of(new Edge(Integer.MIN_VALUE, Integer.MAX_VALUE, IDD.TRUE)));
+		IDD node = factory.getNode(
+			0,
+			List.of(new Edge(Integer.MIN_VALUE, Integer.MAX_VALUE, IDD.TRUE))
+		);
 		// This should be eliminated to TRUE.
 		assertSame(IDD.TRUE, node);
 	}
@@ -71,8 +83,14 @@ class QuantifyTest {
 	@Test
 	@DisplayName("Forall with mixed children returns AND of children")
 	void testForallMixedChildren() {
-		IDD yNode = factory.buildFromIntervals("y", List.of(new Edge(5, 6, factory.trueNode())));
-		IDD node = factory.getNode(0, List.of(new Edge(1, 5, yNode), new Edge(6, 10, IDD.FALSE)));
+		IDD yNode = factory.buildFromIntervals(
+			"y",
+			List.of(new Edge(5, 6, factory.trueNode()))
+		);
+		IDD node = factory.getNode(
+			0,
+			List.of(new Edge(1, 5, yNode), new Edge(6, 10, IDD.FALSE))
+		);
 
 		// The gap-filling means children include FALSE for the gap edges.
 		// AND of {yNode, FALSE, FALSE(gaps)} = FALSE.
@@ -81,11 +99,19 @@ class QuantifyTest {
 	}
 
 	@Test
-	@DisplayName("Forall evaluation: universal quantification produces correct results")
+	@DisplayName(
+		"Forall evaluation: universal quantification produces correct results"
+	)
 	void testForallEvaluation() {
 		// f = (x in [1,5]) AND (y in [10,20])
-		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
-		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
+		IDD xPart = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 5, factory.trueNode()))
+		);
+		IDD yPart = factory.buildFromIntervals(
+			"y",
+			List.of(new Edge(10, 20, factory.trueNode()))
+		);
 		IDD f = factory.and(xPart, yPart);
 
 		// forall x. f = AND over x's children = FALSE (because gaps are FALSE).
@@ -94,11 +120,19 @@ class QuantifyTest {
 	}
 
 	@Test
-	@DisplayName("Exists evaluation: existential quantification produces correct results")
+	@DisplayName(
+		"Exists evaluation: existential quantification produces correct results"
+	)
 	void testExistsEvaluation() {
 		// f = (x in [1,5]) AND (y in [10,20])
-		IDD xPart = factory.buildFromIntervals("x", List.of(new Edge(1, 5, factory.trueNode())));
-		IDD yPart = factory.buildFromIntervals("y", List.of(new Edge(10, 20, factory.trueNode())));
+		IDD xPart = factory.buildFromIntervals(
+			"x",
+			List.of(new Edge(1, 5, factory.trueNode()))
+		);
+		IDD yPart = factory.buildFromIntervals(
+			"y",
+			List.of(new Edge(10, 20, factory.trueNode()))
+		);
 		IDD f = factory.and(xPart, yPart);
 
 		// exists x. f should give a y-based result.
@@ -112,18 +146,33 @@ class QuantifyTest {
 	@Test
 	@DisplayName("Exists with custom range: eliminates ranged variable")
 	void testExistsCustomRange() {
-		Map<String, VariableRange> ranges = Map
-			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port", "proto");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port", "proto");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of(
+				"port",
+				VariableRange.of(0, 65535),
+				"proto",
+				VariableRange.of(0, 255)
+			),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
 		// Build: proto in [6,17] as inner node
-		IDD protoNode = rangedFactory.buildFromIntervals("proto", List.of(new Edge(6, 17, rangedFactory.trueNode())));
+		IDD protoNode = rangedFactory.buildFromIntervals(
+			"proto",
+			List.of(new Edge(6, 17, rangedFactory.trueNode()))
+		);
 		// Build: port in [80,443] -> protoNode, port in [444,65535] -> FALSE
-		IDD portNode = rangedFactory.getNode(0, List.of(new Edge(80, 443, protoNode), new Edge(444, 65535, IDD.FALSE)));
+		IDD portNode = rangedFactory.getNode(
+			0,
+			List.of(
+				new Edge(80, 443, protoNode),
+				new Edge(444, 65535, IDD.FALSE)
+			)
+		);
 
-		// exists port: OR of children {protoNode, FALSE, FALSE(gaps)} =
-		// protoNode.
+		// exists port: OR of children {protoNode, FALSE, FALSE(gaps)} = protoNode.
 		IDD result = Quantify.exists(rangedFactory, portNode, "port");
 		assertSame(protoNode, result);
 	}
@@ -131,13 +180,18 @@ class QuantifyTest {
 	@Test
 	@DisplayName("Forall with custom range: all edges TRUE in range")
 	void testForallCustomRangeAllTrue() {
-		Map<String, VariableRange> ranges = Map.of("proto", VariableRange.of(0, 255));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "proto");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("proto");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("proto", VariableRange.of(0, 255)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		// Every edge in the range [0,255] points to TRUE => AND of {TRUE} =
-		// TRUE.
-		IDD node = rangedFactory.getNode(0, List.of(new Edge(0, 255, IDD.TRUE)));
+		// Every edge in the range [0,255] points to TRUE => AND of {TRUE} = TRUE.
+		IDD node = rangedFactory.getNode(
+			0,
+			List.of(new Edge(0, 255, IDD.TRUE))
+		);
 		// This should be reduced to TRUE.
 		assertSame(IDD.TRUE, node);
 
@@ -148,13 +202,18 @@ class QuantifyTest {
 	@Test
 	@DisplayName("Exists with custom range eliminates variable, producing TRUE")
 	void testExistsCustomRangeEliminates() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		// port in [80,443] -> TRUE, gap-filling: [0,79]->FALSE, [80,443]->TRUE,
-		// [444,65535]->FALSE
-		IDD node = rangedFactory.buildFromIntervals("port", List.of(new Edge(80, 443, rangedFactory.trueNode())));
+		// port in [80,443] -> TRUE, gap-filling: [0,79]->FALSE, [80,443]->TRUE, [444,65535]->FALSE
+		IDD node = rangedFactory.buildFromIntervals(
+			"port",
+			List.of(new Edge(80, 443, rangedFactory.trueNode()))
+		);
 
 		// exists port: OR of {FALSE, TRUE, FALSE} = TRUE.
 		IDD result = Quantify.exists(rangedFactory, node, "port");
@@ -164,13 +223,22 @@ class QuantifyTest {
 	@Test
 	@DisplayName("Forall with custom range and mixed children")
 	void testForallCustomRangeMixedChildren() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
 		// port in [80,443]->TRUE, [444,65535]->FALSE.
 		// Gap-filling: [0,79]->FALSE, [80,443]->TRUE, [444,65535]->FALSE.
-		IDD node = rangedFactory.getNode(0, List.of(new Edge(80, 443, IDD.TRUE), new Edge(444, 65535, IDD.FALSE)));
+		IDD node = rangedFactory.getNode(
+			0,
+			List.of(
+				new Edge(80, 443, IDD.TRUE),
+				new Edge(444, 65535, IDD.FALSE)
+			)
+		);
 
 		// forall port: AND of {FALSE, TRUE, FALSE} = FALSE.
 		IDD result = Quantify.forall(rangedFactory, node, "port");

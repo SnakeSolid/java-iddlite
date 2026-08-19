@@ -1,18 +1,18 @@
 package ru.snake.collection.idd.unit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.util.VariableRange;
 
@@ -31,7 +31,15 @@ class BuilderTest {
 	@Test
 	@DisplayName("Builder creates a correct IDD")
 	void testBasicBuilder() {
-		IDD idd = factory.builder().when("x").in(1, 10).then(true).when("x").in(11, 20).then(false).build();
+		IDD idd = factory
+			.builder()
+			.when("x")
+			.in(1, 10)
+			.then(true)
+			.when("x")
+			.in(11, 20)
+			.then(false)
+			.build();
 
 		assertFalse(idd.isTerminal());
 		assertTrue(Evaluate.evaluate(idd, order, Map.of("x", 5, "y", 0)));
@@ -56,21 +64,43 @@ class BuilderTest {
 	}
 
 	@Test
-	@DisplayName("Canonicity: two builders producing the same IDD return the same object")
+	@DisplayName(
+		"Canonicity: two builders producing the same IDD return the same object"
+	)
 	void testCanonicity() {
-		IDD a = factory.builder().when("x").in(1, 5).then(true).when("x").in(6, 10).then(false).build();
-		IDD b = factory.builder().when("x").in(1, 5).then(true).when("x").in(6, 10).then(false).build();
+		IDD a = factory
+			.builder()
+			.when("x")
+			.in(1, 5)
+			.then(true)
+			.when("x")
+			.in(6, 10)
+			.then(false)
+			.build();
+		IDD b = factory
+			.builder()
+			.when("x")
+			.in(1, 5)
+			.then(true)
+			.when("x")
+			.in(6, 10)
+			.then(false)
+			.build();
 		assertSame(a, b);
 	}
 
 	@Test
 	@DisplayName("Builder with custom ranges respects variable's range")
 	void testBuilderWithCustomRange() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD idd = rangedFactory.builder()
+		IDD idd = rangedFactory
+			.builder()
 			.when("port")
 			.in(80, 443)
 			.then(true)
@@ -90,11 +120,19 @@ class BuilderTest {
 	@Test
 	@DisplayName("Builder with custom range at boundaries")
 	void testBuilderRangeBoundaries() {
-		Map<String, VariableRange> ranges = Map.of("proto", VariableRange.of(0, 255));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "proto");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("proto");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("proto", VariableRange.of(0, 255)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD idd = rangedFactory.builder().when("proto").in(0, 127).then(true).build();
+		IDD idd = rangedFactory
+			.builder()
+			.when("proto")
+			.in(0, 127)
+			.then(true)
+			.build();
 
 		assertTrue(Evaluate.evaluate(idd, rangedOrder, Map.of("proto", 0)));
 		assertTrue(Evaluate.evaluate(idd, rangedOrder, Map.of("proto", 127)));

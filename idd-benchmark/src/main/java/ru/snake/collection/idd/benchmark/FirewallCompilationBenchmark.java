@@ -19,6 +19,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.util.VariableRange;
 
 /**
@@ -57,6 +58,8 @@ public class FirewallCompilationBenchmark {
 
 	private VariableOrder order;
 
+	private VariableRanges ranges;
+
 	// ==================================================================
 	// Setup
 	// ==================================================================
@@ -64,16 +67,19 @@ public class FirewallCompilationBenchmark {
 	@Setup(Level.Trial)
 	public void setUp() {
 		order = new VariableOrder(
-			Map.ofEntries(
-				Map.entry(FirewallBenchmarkUtils.VAR_SRC_PORT, VariableRange.of(0, 65535)),
-				Map.entry(FirewallBenchmarkUtils.VAR_DST_PORT, VariableRange.of(0, 65535)),
-				Map.entry(FirewallBenchmarkUtils.VAR_PROTOCOL, VariableRange.of(0, 255))
-			),
 			FirewallBenchmarkUtils.VAR_SRC_IP,
 			FirewallBenchmarkUtils.VAR_DST_IP,
 			FirewallBenchmarkUtils.VAR_SRC_PORT,
 			FirewallBenchmarkUtils.VAR_DST_PORT,
 			FirewallBenchmarkUtils.VAR_PROTOCOL
+		);
+		ranges = new VariableRanges(
+			Map.ofEntries(
+				Map.entry(FirewallBenchmarkUtils.VAR_SRC_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_DST_PORT, VariableRange.of(0, 65535)),
+				Map.entry(FirewallBenchmarkUtils.VAR_PROTOCOL, VariableRange.of(0, 255))
+			),
+			order
 		);
 	}
 
@@ -94,7 +100,7 @@ public class FirewallCompilationBenchmark {
 	@Benchmark
 	@BenchmarkMode({ Mode.AverageTime, Mode.Throughput })
 	public int compileFirewall() {
-		IDDFactory factory = new IDDFactory(order);
+		IDDFactory factory = new IDDFactory(order, ranges);
 		FirewallPolicyBuilder builder = FirewallPolicyBuilder.of(factory);
 		IDD firewall = builder.buildFirewall(ruleCount);
 		return countNodes(firewall);

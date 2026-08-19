@@ -4,15 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.operation.Restrict;
 import ru.snake.collection.idd.util.VariableRange;
 
@@ -37,20 +36,26 @@ class RestrictTest {
 	@Test
 	@DisplayName("Restrict picks the correct child")
 	void testRestrictCorrectChild() {
-		IDD node = factory.getNode(0, List.of(new Edge(1, 5, IDD.TRUE), new Edge(6, 10, IDD.FALSE)));
+		IDD node = factory.getNode(
+			0,
+			List.of(new Edge(1, 5, IDD.TRUE), new Edge(6, 10, IDD.FALSE))
+		);
 
 		assertSame(IDD.TRUE, Restrict.restrict(factory, node, "x", 3));
 		assertSame(IDD.FALSE, Restrict.restrict(factory, node, "x", 8));
 	}
 
 	@Test
-	@DisplayName("Restrict on a non-present variable recurses but returns equivalent structure")
+	@DisplayName(
+		"Restrict on a non-present variable recurses but returns equivalent structure"
+	)
 	void testRestrictNonPresent() {
-		IDD node = factory.getNode(0, List.of(new Edge(1, 5, IDD.TRUE), new Edge(6, 10, IDD.FALSE)));
-		// Restricting "z" (index 2) on a node with variable "x" (index 0)
-		// recurses
-		// into children (TRUE/FALSE), rebuilds, and should get the same node
-		// back.
+		IDD node = factory.getNode(
+			0,
+			List.of(new Edge(1, 5, IDD.TRUE), new Edge(6, 10, IDD.FALSE))
+		);
+		// Restricting "z" (index 2) on a node with variable "x" (index 0) recurses
+		// into children (TRUE/FALSE), rebuilds, and should get the same node back.
 		IDD result = Restrict.restrict(factory, node, "z", 100);
 		assertSame(node, result);
 	}
@@ -59,8 +64,14 @@ class RestrictTest {
 	@DisplayName("Restrict recurses through lower variables")
 	void testRestrictRecurse() {
 		// Build: x -> [1,5]->(y -> [1,3]->TRUE, [4,6]->FALSE), [6,10]->FALSE
-		IDD yNode = factory.getNode(1, List.of(new Edge(1, 3, IDD.TRUE), new Edge(4, 6, IDD.FALSE)));
-		IDD xNode = factory.getNode(0, List.of(new Edge(1, 5, yNode), new Edge(6, 10, IDD.FALSE)));
+		IDD yNode = factory.getNode(
+			1,
+			List.of(new Edge(1, 3, IDD.TRUE), new Edge(4, 6, IDD.FALSE))
+		);
+		IDD xNode = factory.getNode(
+			0,
+			List.of(new Edge(1, 5, yNode), new Edge(6, 10, IDD.FALSE))
+		);
 
 		// Restrict x=3, y=2 -> should pick yNode from x=3, then TRUE from y=2.
 		IDD afterX = Restrict.restrict(factory, xNode, "x", 3);
@@ -73,28 +84,61 @@ class RestrictTest {
 	@Test
 	@DisplayName("Restrict with custom range picks correct child")
 	void testRestrictCustomRange() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "port");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("port");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD node = rangedFactory.getNode(0, List.of(new Edge(0, 1024, IDD.TRUE), new Edge(1025, 65535, IDD.FALSE)));
+		IDD node = rangedFactory.getNode(
+			0,
+			List.of(
+				new Edge(0, 1024, IDD.TRUE),
+				new Edge(1025, 65535, IDD.FALSE)
+			)
+		);
 
-		assertSame(IDD.TRUE, Restrict.restrict(rangedFactory, node, "port", 80));
-		assertSame(IDD.FALSE, Restrict.restrict(rangedFactory, node, "port", 8080));
+		assertSame(
+			IDD.TRUE,
+			Restrict.restrict(rangedFactory, node, "port", 80)
+		);
+		assertSame(
+			IDD.FALSE,
+			Restrict.restrict(rangedFactory, node, "port", 8080)
+		);
 	}
 
 	@Test
 	@DisplayName("Restrict with custom range at boundaries")
 	void testRestrictCustomRangeBoundaries() {
-		Map<String, VariableRange> ranges = Map.of("proto", VariableRange.of(0, 255));
-		VariableOrder rangedOrder = new VariableOrder(ranges, "proto");
-		IDDFactory rangedFactory = new IDDFactory(rangedOrder);
+		VariableOrder rangedOrder = new VariableOrder("proto");
+		VariableRanges rangedRanges = new VariableRanges(
+			Map.of("proto", VariableRange.of(0, 255)),
+			rangedOrder
+		);
+		IDDFactory rangedFactory = new IDDFactory(rangedOrder, rangedRanges);
 
-		IDD node = rangedFactory.getNode(0, List.of(new Edge(0, 127, IDD.TRUE), new Edge(128, 255, IDD.FALSE)));
+		IDD node = rangedFactory.getNode(
+			0,
+			List.of(new Edge(0, 127, IDD.TRUE), new Edge(128, 255, IDD.FALSE))
+		);
 
-		assertSame(IDD.TRUE, Restrict.restrict(rangedFactory, node, "proto", 0));
-		assertSame(IDD.TRUE, Restrict.restrict(rangedFactory, node, "proto", 127));
-		assertSame(IDD.FALSE, Restrict.restrict(rangedFactory, node, "proto", 128));
-		assertSame(IDD.FALSE, Restrict.restrict(rangedFactory, node, "proto", 255));
+		assertSame(
+			IDD.TRUE,
+			Restrict.restrict(rangedFactory, node, "proto", 0)
+		);
+		assertSame(
+			IDD.TRUE,
+			Restrict.restrict(rangedFactory, node, "proto", 127)
+		);
+		assertSame(
+			IDD.FALSE,
+			Restrict.restrict(rangedFactory, node, "proto", 128)
+		);
+		assertSame(
+			IDD.FALSE,
+			Restrict.restrict(rangedFactory, node, "proto", 255)
+		);
 	}
 }

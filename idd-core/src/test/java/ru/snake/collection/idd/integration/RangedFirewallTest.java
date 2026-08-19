@@ -9,14 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
+import ru.snake.collection.idd.core.VariableRanges;
 import ru.snake.collection.idd.operation.Evaluate;
 import ru.snake.collection.idd.operation.Quantify;
 import ru.snake.collection.idd.operation.Restrict;
@@ -27,16 +26,19 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Firewall rules with port and protocol ranges")
 	void testRangedFirewall() {
-		Map<String, VariableRange> ranges = Map.of(
-			"src_port",
-			VariableRange.of(0, 65535),
-			"dst_port",
-			VariableRange.of(0, 65535),
-			"proto",
-			VariableRange.of(0, 255)
+		VariableOrder order = new VariableOrder("proto", "src_port", "dst_port");
+		VariableRanges ranges = new VariableRanges(
+			Map.of(
+				"src_port",
+				VariableRange.of(0, 65535),
+				"dst_port",
+				VariableRange.of(0, 65535),
+				"proto",
+				VariableRange.of(0, 255)
+			),
+			order
 		);
-		VariableOrder order = new VariableOrder(ranges, "proto", "src_port", "dst_port");
-		IDDFactory factory = new IDDFactory(order);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		// Rule 1: TCP (6) to port 80
 		IDD rule1 = factory.builder().when("proto").in(6, 6).then(true).when("dst_port").in(80, 80).then(true).build();
@@ -86,10 +88,12 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Restrict fixes a variable and simplifies the diagram")
 	void testRestrictRangedFirewall() {
-		Map<String, VariableRange> ranges = Map
-			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
-		VariableOrder order = new VariableOrder(ranges, "proto", "port");
-		IDDFactory factory = new IDDFactory(order);
+		VariableOrder order = new VariableOrder("proto", "port");
+		VariableRanges ranges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255)),
+			order
+		);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		IDD policy = factory.builder().when("proto").in(6, 6).then(true).when("port").in(80, 443).then(true).build();
 
@@ -104,10 +108,12 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Quantify eliminates a ranged variable correctly")
 	void testQuantifyRangedVariable() {
-		Map<String, VariableRange> ranges = Map
-			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
-		VariableOrder order = new VariableOrder(ranges, "proto", "port");
-		IDDFactory factory = new IDDFactory(order);
+		VariableOrder order = new VariableOrder("proto", "port");
+		VariableRanges ranges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255)),
+			order
+		);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		// f = (proto in [6,6]) AND (port in [80,443])
 		IDD protoPart = factory.buildFromIntervals("proto", List.of(new Edge(6, 6, factory.trueNode())));
@@ -127,9 +133,9 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("NOT and OR complement with custom ranges")
 	void testComplementWithCustomRanges() {
-		Map<String, VariableRange> ranges = Map.of("port", VariableRange.of(0, 65535));
-		VariableOrder order = new VariableOrder(ranges, "port");
-		IDDFactory factory = new IDDFactory(order);
+		VariableOrder order = new VariableOrder("port");
+		VariableRanges ranges = new VariableRanges(Map.of("port", VariableRange.of(0, 65535)), order);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		IDD f = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
 		IDD notF = factory.not(f);
@@ -142,9 +148,9 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Single-value variable range")
 	void testSingleValueRange() {
-		Map<String, VariableRange> ranges = Map.of("flag", VariableRange.of(0, 1));
-		VariableOrder order = new VariableOrder(ranges, "flag");
-		IDDFactory factory = new IDDFactory(order);
+		VariableOrder order = new VariableOrder("flag");
+		VariableRanges ranges = new VariableRanges(Map.of("flag", VariableRange.of(0, 1)), order);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		// Flag is TRUE only when it equals 1.
 		IDD f = factory.buildFromIntervals("flag", List.of(new Edge(1, 1, factory.trueNode())));
@@ -164,10 +170,12 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Deterministic evaluation with ranged variables covers the full range")
 	void testDeterministicRangedEvaluations() {
-		Map<String, VariableRange> ranges = Map
-			.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255));
-		VariableOrder order = new VariableOrder(ranges, "proto", "port");
-		IDDFactory factory = new IDDFactory(order);
+		VariableOrder order = new VariableOrder("proto", "port");
+		VariableRanges ranges = new VariableRanges(
+			Map.of("port", VariableRange.of(0, 65535), "proto", VariableRange.of(0, 255)),
+			order
+		);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		// Build a port-only rule: accept ports 80-443
 		IDD portRule = factory.buildFromIntervals("port", List.of(new Edge(80, 443, factory.trueNode())));
@@ -220,16 +228,19 @@ class RangedFirewallTest {
 	@Test
 	@DisplayName("Performance: many evaluations with ranged variables")
 	void testRangedPerformance() {
-		Map<String, VariableRange> ranges = Map.of(
-			"src_port",
-			VariableRange.of(0, 65535),
-			"dst_port",
-			VariableRange.of(0, 65535),
-			"proto",
-			VariableRange.of(0, 255)
+		VariableOrder order = new VariableOrder("proto", "src_port", "dst_port");
+		VariableRanges ranges = new VariableRanges(
+			Map.of(
+				"src_port",
+				VariableRange.of(0, 65535),
+				"dst_port",
+				VariableRange.of(0, 65535),
+				"proto",
+				VariableRange.of(0, 255)
+			),
+			order
 		);
-		VariableOrder order = new VariableOrder(ranges, "proto", "src_port", "dst_port");
-		IDDFactory factory = new IDDFactory(order);
+		IDDFactory factory = new IDDFactory(order, ranges);
 
 		// Build a realistic-ish policy with multiple rules.
 		IDD policy = factory.falseNode();

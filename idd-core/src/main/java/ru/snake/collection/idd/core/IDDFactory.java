@@ -21,17 +21,42 @@ public final class IDDFactory {
 
 	private final VariableOrder order;
 
+	private final VariableRanges ranges;
+
 	private final Map<NodeKey, IDD> uniqueTable;
 
 	private final Map<OperationKey, IDD> applyCache = new WeakHashMap<>();
 
+	/**
+	 * Constructs a factory with full integer ranges for all variables.
+	 *
+	 * @param order the variable order
+	 */
 	public IDDFactory(VariableOrder order) {
+		this(order, new VariableRanges(Map.of(), order));
+	}
+
+	/**
+	 * Constructs a factory with custom variable ranges.
+	 *
+	 * @param order  the variable order
+	 * @param ranges the per-variable range constraints
+	 */
+	public IDDFactory(VariableOrder order, VariableRanges ranges) {
 		this.order = Objects.requireNonNull(order);
+		this.ranges = Objects.requireNonNull(ranges);
 		this.uniqueTable = new WeakHashMap<>();
 	}
 
 	public VariableOrder order() {
 		return order;
+	}
+
+	/**
+	 * Returns the variable range registry for this factory.
+	 */
+	public VariableRanges ranges() {
+		return ranges;
 	}
 
 	/**
@@ -89,7 +114,7 @@ public final class IDDFactory {
 	 *                                      valid range
 	 */
 	public IDD getNode(int variable, List<Edge> rawEdges) {
-		VariableRange range = order.range(variable);
+		VariableRange range = ranges.range(variable);
 
 		// Validate raw edges are within the variable's range.
 		for (Edge e : rawEdges) {
@@ -134,7 +159,7 @@ public final class IDDFactory {
 			throw new IllegalArgumentException("Edge list must not be empty");
 		}
 
-		VariableRange range = order.range(variable);
+		VariableRange range = ranges.range(variable);
 		int minVal = range.min();
 		int maxVal = range.max();
 
