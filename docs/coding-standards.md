@@ -61,6 +61,8 @@ All core classes are `final` with `private final` fields. No setters exist.
 | `Operation` | immutable (enum) |
 | `IDDFactory` | mutable state (`uniqueTable`, `applyCache`) |
 | `IDDBuilder` | mutable (builder pattern, consumed on `build()`) |
+| `IntervalCondition` | immutable (carries builder ref + var index) |
+| `ThenCondition` | immutable (carries builder ref + var index + interval bounds) |
 
 ### Visibility
 

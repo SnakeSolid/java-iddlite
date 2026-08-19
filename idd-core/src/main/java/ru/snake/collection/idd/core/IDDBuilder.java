@@ -19,12 +19,6 @@ public final class IDDBuilder {
 
 	private final IDDFactory factory;
 
-	private int currentVarIndex = -1;
-
-	private int currentLow = -1;
-
-	private int currentHigh = -1;
-
 	private final List<Rule> rules = new ArrayList<>();
 
 	IDDBuilder(IDDFactory factory) {
@@ -35,8 +29,16 @@ public final class IDDBuilder {
 	 * Start a new rule clause for the given variable.
 	 */
 	public IntervalCondition when(String varName) {
-		currentVarIndex = factory.order().index(varName);
-		return new IntervalCondition();
+		int varIndex = factory.order().index(varName);
+		return new IntervalCondition(this, varIndex);
+	}
+
+	/**
+	 * Adds a rule to the builder. Called by {@link ThenCondition} to register a
+	 * completed rule.
+	 */
+	void addRule(int varIndex, int low, int high, boolean isTrue) {
+		rules.add(new Rule(varIndex, low, high, isTrue));
 	}
 
 	/**
@@ -51,8 +53,8 @@ public final class IDDBuilder {
 		// Collect distinct variable indices from the rules.
 		List<Integer> distinctVars = new ArrayList<>();
 		for (Rule r : rules) {
-			if (!distinctVars.contains(r.varIndex)) {
-				distinctVars.add(r.varIndex);
+			if (!distinctVars.contains(r.varIndex())) {
+				distinctVars.add(r.varIndex());
 			}
 		}
 		distinctVars.sort(Integer::compareTo);
@@ -79,9 +81,9 @@ public final class IDDBuilder {
 		List<Edge> edges = new ArrayList<>();
 
 		for (Rule r : rules) {
-			if (r.varIndex == varIndex) {
-				IDD child = r.isTrue ? factory.trueNode() : factory.falseNode();
-				edges.add(new Edge(r.low, r.high, child));
+			if (r.varIndex() == varIndex) {
+				IDD child = r.isTrue() ? factory.trueNode() : factory.falseNode();
+				edges.add(new Edge(r.low(), r.high(), child));
 			}
 		}
 
@@ -90,23 +92,6 @@ public final class IDDBuilder {
 		}
 
 		return factory.getNode(varIndex, edges);
-	}
-
-	public class IntervalCondition {
-
-		public ThenCondition in(int low, int high) {
-			currentLow = low;
-			currentHigh = high;
-			return new ThenCondition();
-		}
-	}
-
-	public class ThenCondition {
-
-		public IDDBuilder then(boolean value) {
-			rules.add(new Rule(currentVarIndex, currentLow, currentHigh, value));
-			return IDDBuilder.this;
-		}
 	}
 
 	private record Rule(int varIndex, int low, int high, boolean isTrue) {
