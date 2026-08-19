@@ -1,4 +1,4 @@
-package ru.snake.collection.idd.unit;
+package ru.snake.collection.idd.core.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,9 +14,9 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.util.Formatters;
-import ru.snake.collection.idd.util.IDDPrinter;
-import ru.snake.collection.idd.util.ValueFormatter;
+import ru.snake.collection.idd.core.util.Formatters;
+import ru.snake.collection.idd.core.util.IDDPrinter;
+import ru.snake.collection.idd.core.util.ValueFormatter;
 
 class IDDPrinterTest {
 

@@ -1,11 +1,10 @@
-package ru.snake.collection.idd.util;
+package ru.snake.collection.idd.core.util;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.IdentityHashMap;
 import java.util.Map;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -26,8 +25,7 @@ import ru.snake.collection.idd.core.VariableOrder;
  */
 public final class MermaidExporter {
 
-	private MermaidExporter() {
-	}
+	private MermaidExporter() {}
 
 	// -----------------------------------------------------------------------
 	// File-based exports
@@ -40,7 +38,8 @@ public final class MermaidExporter {
 	 * @param order    the variable order (for readable node labels)
 	 * @param filePath the output file path
 	 */
-	public static void export(IDD f, VariableOrder order, String filePath) throws IOException {
+	public static void export(IDD f, VariableOrder order, String filePath)
+		throws IOException {
 		export(f, order, ValueFormatter.RAW, filePath);
 	}
 
@@ -52,8 +51,12 @@ public final class MermaidExporter {
 	 * @param formatter formats raw integer values in edge intervals
 	 * @param filePath  the output file path
 	 */
-	public static void export(IDD f, VariableOrder order, ValueFormatter formatter, String filePath)
-			throws IOException {
+	public static void export(
+		IDD f,
+		VariableOrder order,
+		ValueFormatter formatter,
+		String filePath
+	) throws IOException {
 		try (PrintWriter pw = new PrintWriter(new FileWriter(filePath))) {
 			pw.print(toString(f, order, formatter));
 		}
@@ -76,7 +79,8 @@ public final class MermaidExporter {
 	 * @param formatter formats raw integer values in edge intervals
 	 * @param filePath  the output file path
 	 */
-	public static void export(IDD f, ValueFormatter formatter, String filePath) throws IOException {
+	public static void export(IDD f, ValueFormatter formatter, String filePath)
+		throws IOException {
 		try (PrintWriter pw = new PrintWriter(new FileWriter(filePath))) {
 			pw.print(toString(f, formatter));
 		}
@@ -106,7 +110,11 @@ public final class MermaidExporter {
 	 * @param formatter formats raw integer values in edge intervals
 	 * @return a Mermaid diagram string
 	 */
-	public static String toString(IDD f, VariableOrder order, ValueFormatter formatter) {
+	public static String toString(
+		IDD f,
+		VariableOrder order,
+		ValueFormatter formatter
+	) {
 		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
@@ -119,7 +127,11 @@ public final class MermaidExporter {
 
 			if (node.isTerminal()) {
 				String text = node.isTrue() ? "TRUE" : "FALSE";
-				sb.append("    ").append(id).append("[\"").append(text).append("\"]:::terminal\n");
+				sb.append("    ")
+					.append(id)
+					.append("[\"")
+					.append(text)
+					.append("\"]:::terminal\n");
 			} else {
 				String varName = order.name(node.variable());
 				sb.append("    ")
@@ -139,7 +151,12 @@ public final class MermaidExporter {
 
 			for (Edge e : node.edges()) {
 				String toId = labels.get(e.child());
-				String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
+				String interval = IDDTraversal.formatInterval(
+					varIndex,
+					e.low(),
+					e.high(),
+					formatter
+				);
 				sb.append("    ")
 					.append(fromId)
 					.append(" -->|\"")
@@ -151,7 +168,9 @@ public final class MermaidExporter {
 		}
 
 		sb.append("\n");
-		sb.append("    classDef terminal fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;");
+		sb.append(
+			"    classDef terminal fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;"
+		);
 		return sb.toString();
 	}
 
@@ -179,10 +198,18 @@ public final class MermaidExporter {
 		sb.append("graph TD\n");
 		sb.append("    direction TB\n");
 
-		visit(f, new IdentityHashMap<>(), sb, new IDDTraversal.Counter(), formatter);
+		visit(
+			f,
+			new IdentityHashMap<>(),
+			sb,
+			new IDDTraversal.Counter(),
+			formatter
+		);
 
 		sb.append("\n");
-		sb.append("    classDef terminal fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;");
+		sb.append(
+			"    classDef terminal fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;"
+		);
 		return sb.toString();
 	}
 
@@ -206,15 +233,30 @@ public final class MermaidExporter {
 
 		if (f.isTerminal()) {
 			String text = f.isTrue() ? "TRUE" : "FALSE";
-			sb.append("    ").append(id).append("[\"").append(text).append("\"]:::terminal\n");
+			sb.append("    ")
+				.append(id)
+				.append("[\"")
+				.append(text)
+				.append("\"]:::terminal\n");
 		} else {
 			int varIndex = f.variable();
-			sb.append("    ").append(id).append("[\"").append(id).append("<br/>var=").append(varIndex).append("\"]\n");
+			sb.append("    ")
+				.append(id)
+				.append("[\"")
+				.append(id)
+				.append("<br/>var=")
+				.append(varIndex)
+				.append("\"]\n");
 
 			for (Edge e : f.edges()) {
 				visit(e.child(), labels, sb, counter, formatter);
 				String toId = labels.get(e.child());
-				String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
+				String interval = IDDTraversal.formatInterval(
+					varIndex,
+					e.low(),
+					e.high(),
+					formatter
+				);
 				sb.append("    ")
 					.append(id)
 					.append(" -->|\"")
@@ -230,6 +272,9 @@ public final class MermaidExporter {
 	 * Escapes characters that have special meaning in Mermaid node labels.
 	 */
 	private static String escape(String s) {
-		return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+		return s
+			.replace("&", "&amp;")
+			.replace("<", "&lt;")
+			.replace(">", "&gt;");
 	}
 }

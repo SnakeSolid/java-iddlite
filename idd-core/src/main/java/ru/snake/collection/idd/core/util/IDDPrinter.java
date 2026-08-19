@@ -1,10 +1,9 @@
-package ru.snake.collection.idd.util;
+package ru.snake.collection.idd.core.util;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -30,8 +29,7 @@ import ru.snake.collection.idd.core.VariableOrder;
  */
 public final class IDDPrinter {
 
-	private IDDPrinter() {
-	}
+	private IDDPrinter() {}
 
 	// ==================================================================
 	// Indented mode
@@ -67,7 +65,11 @@ public final class IDDPrinter {
 	 *                      name)
 	 * @return the formatted string
 	 */
-	public static String print(IDD f, VariableOrder order, ValueFormatter formatter) {
+	public static String print(
+		IDD f,
+		VariableOrder order,
+		ValueFormatter formatter
+	) {
 		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
@@ -103,7 +105,11 @@ public final class IDDPrinter {
 	 * @param formatter formats raw integer values
 	 * @return the compact string
 	 */
-	public static String printCompact(IDD f, VariableOrder order, ValueFormatter formatter) {
+	public static String printCompact(
+		IDD f,
+		VariableOrder order,
+		ValueFormatter formatter
+	) {
 		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
@@ -146,7 +152,11 @@ public final class IDDPrinter {
 	 * @param formatter formats raw integer values
 	 * @return the tree diagram as a string
 	 */
-	public static String printTree(IDD f, VariableOrder order, ValueFormatter formatter) {
+	public static String printTree(
+		IDD f,
+		VariableOrder order,
+		ValueFormatter formatter
+	) {
 		Map<IDD, String> labels = IDDTraversal.assignLabels(f);
 
 		StringBuilder sb = new StringBuilder();
@@ -179,29 +189,60 @@ public final class IDDPrinter {
 
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
-			sb.append(prefix).append(label).append(" ").append(terminal).append("\n");
+			sb.append(prefix)
+				.append(label)
+				.append(" ")
+				.append(terminal)
+				.append("\n");
 
 			return;
 		}
 
 		String varName = order.name(f.variable());
 		int varIndex = f.variable();
-		sb.append(prefix).append(label).append(" var=").append(varName).append("\n");
+		sb.append(prefix)
+			.append(label)
+			.append(" var=")
+			.append(varName)
+			.append("\n");
 
 		for (Edge e : f.edges()) {
 			String childLabel = labels.get(e.child());
-			String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
+			String interval = IDDTraversal.formatInterval(
+				varIndex,
+				e.low(),
+				e.high(),
+				formatter
+			);
 
 			if (e.child().isTerminal()) {
 				// Always print terminals inline
 				String terminal = e.child().isTrue() ? "TRUE" : "FALSE";
-				sb.append(prefix).append("  ").append(interval).append(" -> ").append(terminal).append("\n");
+				sb.append(prefix)
+					.append("  ")
+					.append(interval)
+					.append(" -> ")
+					.append(terminal)
+					.append("\n");
 			} else if (printed.contains(e.child())) {
 				// Child already printed elsewhere — show reference
-				sb.append(prefix).append("  ").append(interval).append(" -> @").append(childLabel).append("\n");
+				sb.append(prefix)
+					.append("  ")
+					.append(interval)
+					.append(" -> @")
+					.append(childLabel)
+					.append("\n");
 			} else {
 				sb.append(prefix).append("  ").append(interval).append(" ->\n");
-				printNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
+				printNode(
+					e.child(),
+					order,
+					labels,
+					formatter,
+					sb,
+					indent + 1,
+					printed
+				);
 			}
 		}
 	}
@@ -230,7 +271,11 @@ public final class IDDPrinter {
 
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
-			sb.append(prefix).append(label).append(" ").append(terminal).append("\n");
+			sb.append(prefix)
+				.append(label)
+				.append(" ")
+				.append(terminal)
+				.append("\n");
 
 			return;
 		}
@@ -241,14 +286,28 @@ public final class IDDPrinter {
 
 		for (Edge e : f.edges()) {
 			String childLabel = labels.get(e.child());
-			String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
+			String interval = IDDTraversal.formatInterval(
+				varIndex,
+				e.low(),
+				e.high(),
+				formatter
+			);
 
 			if (e.child().isTerminal()) {
-				sb.append(" ").append(interval).append("]]->").append(childLabel);
+				sb.append(" ")
+					.append(interval)
+					.append("]]->")
+					.append(childLabel);
 			} else if (printed.contains(e.child())) {
-				sb.append(" ").append(interval).append("]]->@").append(childLabel);
+				sb.append(" ")
+					.append(interval)
+					.append("]]->@")
+					.append(childLabel);
 			} else {
-				sb.append(" ").append(interval).append("]]->").append(childLabel);
+				sb.append(" ")
+					.append(interval)
+					.append("]]->")
+					.append(childLabel);
 			}
 		}
 
@@ -257,7 +316,15 @@ public final class IDDPrinter {
 		// Recurse into children that haven't been printed yet
 		for (Edge e : f.edges()) {
 			if (!e.child().isTerminal() && !printed.contains(e.child())) {
-				printCompactNode(e.child(), order, labels, formatter, sb, indent + 1, printed);
+				printCompactNode(
+					e.child(),
+					order,
+					labels,
+					formatter,
+					sb,
+					indent + 1,
+					printed
+				);
 			}
 		}
 	}
@@ -291,7 +358,12 @@ public final class IDDPrinter {
 		if (f.isTerminal()) {
 			String terminal = f.isTrue() ? "TRUE" : "FALSE";
 			String nodePrefix = isLast ? LAST_BRANCH : BRANCH;
-			sb.append(prefix).append(nodePrefix).append(label).append(" ").append(terminal).append("\n");
+			sb.append(prefix)
+				.append(nodePrefix)
+				.append(label)
+				.append(" ")
+				.append(terminal)
+				.append("\n");
 
 			return;
 		}
@@ -311,7 +383,12 @@ public final class IDDPrinter {
 		} else {
 			// First visit from a direct call
 			String nodePrefix = isLast ? LAST_BRANCH : BRANCH;
-			sb.append(prefix).append(nodePrefix).append(varName).append(" (").append(label).append(")\n");
+			sb.append(prefix)
+				.append(nodePrefix)
+				.append(varName)
+				.append(" (")
+				.append(label)
+				.append(")\n");
 		}
 
 		String childPrefix;
@@ -330,8 +407,17 @@ public final class IDDPrinter {
 		for (Edge e : f.edges()) {
 			index++;
 			boolean childIsLast = index == edgeCount;
-			String interval = IDDTraversal.formatInterval(varIndex, e.low(), e.high(), formatter);
-			String linePrefix = childPrefix + (childIsLast ? LAST_BRANCH : BRANCH) + interval + ARROW;
+			String interval = IDDTraversal.formatInterval(
+				varIndex,
+				e.low(),
+				e.high(),
+				formatter
+			);
+			String linePrefix =
+				childPrefix +
+				(childIsLast ? LAST_BRANCH : BRANCH) +
+				interval +
+				ARROW;
 
 			if (e.child().isTerminal()) {
 				String terminal = e.child().isTrue() ? "TRUE" : "FALSE";
@@ -340,15 +426,33 @@ public final class IDDPrinter {
 				// Shared — already printed from another edge
 				String childVarName = order.name(e.child().variable());
 				String childLabel = labels.get(e.child());
-				sb.append(linePrefix).append(childVarName).append(" (@").append(childLabel).append(")\n");
+				sb.append(linePrefix)
+					.append(childVarName)
+					.append(" (@")
+					.append(childLabel)
+					.append(")\n");
 			} else {
 				// First visit — header on edge line, then expand grandchildren
 				String childVarName = order.name(e.child().variable());
 				String childLabel = labels.get(e.child());
 				printed.add(e.child());
-				sb.append(linePrefix).append(childVarName).append(" (").append(childLabel).append(")\n");
-				String grandChildPrefix = childPrefix + (childIsLast ? BLANK : CONTINUATION);
-				printTreeNode(e.child(), order, labels, formatter, sb, grandChildPrefix, true, printed);
+				sb.append(linePrefix)
+					.append(childVarName)
+					.append(" (")
+					.append(childLabel)
+					.append(")\n");
+				String grandChildPrefix =
+					childPrefix + (childIsLast ? BLANK : CONTINUATION);
+				printTreeNode(
+					e.child(),
+					order,
+					labels,
+					formatter,
+					sb,
+					grandChildPrefix,
+					true,
+					printed
+				);
 			}
 		}
 	}

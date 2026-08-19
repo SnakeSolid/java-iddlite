@@ -12,7 +12,7 @@
 | Classes | `PascalCase` | `IDD`, `IDDFactory`, `Operation`, `VariableRange` |
 | Methods / fields | `camelCase` | `getNode`, `uniqueTable`, `currentVarIndex` |
 | Constants | `UPPER_SNAKE_CASE` | `TRUE`, `FALSE` |
-| Package | lowercase, dot-separated | `ru.snake.collection.idd.core`, `ru.snake.collection.idd.operation`, `ru.snake.collection.idd.util` |
+| Package | lowercase, dot-separated | `ru.snake.collection.idd.core`, `ru.snake.collection.idd.core.operation`, `ru.snake.collection.idd.core.util` |
 | Test classes | `<ClassName>Test` | `IDDTest`, `ApplyTest` |
 | Test methods | `test<Description>` | `testInterning`, `testDeMorgan1` |
 

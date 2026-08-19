@@ -1,4 +1,4 @@
-package ru.snake.collection.idd.integration;
+package ru.snake.collection.idd.core.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,7 +15,7 @@ import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Evaluate;
+import ru.snake.collection.idd.core.operation.Evaluate;
 
 class StressTest {
 

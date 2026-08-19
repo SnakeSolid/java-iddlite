@@ -1,4 +1,4 @@
-package ru.snake.collection.idd.util;
+package ru.snake.collection.idd.core.util;
 
 /**
  * Formats a raw integer value for a given variable into a human-readable
@@ -11,7 +11,6 @@ package ru.snake.collection.idd.util;
  */
 @FunctionalInterface
 public interface ValueFormatter {
-
 	/**
 	 * Formats the raw integer value for the given variable index.
 	 *
@@ -37,7 +36,12 @@ public interface ValueFormatter {
 	 *                       variable's values
 	 * @return a composite formatter
 	 */
-	static ValueFormatter composite(java.util.Map<Integer, java.util.function.IntFunction<String>> formatters) {
+	static ValueFormatter composite(
+		java.util.Map<
+			Integer,
+			java.util.function.IntFunction<String>
+		> formatters
+	) {
 		return (varIndex, value) -> {
 			java.util.function.IntFunction<String> f = formatters.get(varIndex);
 

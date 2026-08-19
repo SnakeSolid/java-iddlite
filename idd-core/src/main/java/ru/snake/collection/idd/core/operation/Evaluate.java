@@ -1,7 +1,6 @@
-package ru.snake.collection.idd.operation;
+package ru.snake.collection.idd.core.operation;
 
 import java.util.Map;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.VariableOrder;
@@ -11,8 +10,7 @@ import ru.snake.collection.idd.core.VariableOrder;
  */
 public final class Evaluate {
 
-	private Evaluate() {
-	}
+	private Evaluate() {}
 
 	/**
 	 * Evaluates the IDD with the given assignment, specified as an array where
@@ -40,7 +38,12 @@ public final class Evaluate {
 			}
 		}
 
-		throw new IllegalStateException("No edge covers value " + value + " for variable index " + f.variable());
+		throw new IllegalStateException(
+			"No edge covers value " +
+				value +
+				" for variable index " +
+				f.variable()
+		);
 	}
 
 	/**
@@ -58,13 +61,19 @@ public final class Evaluate {
 	 * @throws IllegalArgumentException if a variable in the order is not
 	 *                                      present in the assignment
 	 */
-	public static boolean evaluate(IDD f, VariableOrder order, Map<String, Integer> assignment) {
+	public static boolean evaluate(
+		IDD f,
+		VariableOrder order,
+		Map<String, Integer> assignment
+	) {
 		int[] values = new int[order.size()];
 		for (int i = 0; i < values.length; i++) {
 			String name = order.name(i);
 			Integer value = assignment.get(name);
 			if (value == null) {
-				throw new IllegalArgumentException("Missing assignment for variable: " + name);
+				throw new IllegalArgumentException(
+					"Missing assignment for variable: " + name
+				);
 			}
 			values[i] = value;
 		}

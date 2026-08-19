@@ -1,4 +1,4 @@
-package ru.snake.collection.idd.unit;
+package ru.snake.collection.idd.core.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.core.VariableRanges;
-import ru.snake.collection.idd.util.VariableRange;
+import ru.snake.collection.idd.core.util.VariableRange;
 
 class VariableRangesTest {
 

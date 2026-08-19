@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
-
-import ru.snake.collection.idd.util.VariableRange;
+import ru.snake.collection.idd.core.util.VariableRange;
 
 /**
  * Factory for creating IDD nodes with hash-consing (unique table) and
@@ -120,8 +119,16 @@ public final class IDDFactory {
 		for (Edge e : rawEdges) {
 			if (e.low() < range.min() || e.high() > range.max()) {
 				throw new IllegalArgumentException(
-					"Edge [" + e.low() + "," + e.high() + "] out of range [" + range.min() + "," + range.max()
-							+ "] for variable " + variable
+					"Edge [" +
+						e.low() +
+						"," +
+						e.high() +
+						"] out of range [" +
+						range.min() +
+						"," +
+						range.max() +
+						"] for variable " +
+						variable
 				);
 			}
 		}
@@ -139,7 +146,9 @@ public final class IDDFactory {
 		}
 
 		NodeKey key = new NodeKey(variable, normalised);
-		return uniqueTable.computeIfAbsent(key, k -> new IDD(variable, normalised));
+		return uniqueTable.computeIfAbsent(key, k ->
+			new IDD(variable, normalised)
+		);
 	}
 
 	/**
@@ -174,7 +183,10 @@ public final class IDDFactory {
 		for (int i = 1; i < sorted.size(); i++) {
 			Edge next = sorted.get(i);
 
-			if (current.child() == next.child() && current.high() + 1L == next.low()) {
+			if (
+				current.child() == next.child() &&
+				current.high() + 1L == next.low()
+			) {
 				// Merge: extend the current interval.
 				current = new Edge(current.low(), next.high(), current.child());
 			} else {
@@ -205,7 +217,9 @@ public final class IDDFactory {
 		}
 
 		// Add trailing FALSE edge if needed.
-		if (!filled.isEmpty() && filled.get(filled.size() - 1).high() < maxVal) {
+		if (
+			!filled.isEmpty() && filled.get(filled.size() - 1).high() < maxVal
+		) {
 			int trailingLow = filled.get(filled.size() - 1).high() + 1;
 
 			if (trailingLow <= maxVal) {
@@ -279,9 +293,14 @@ public final class IDDFactory {
 			}
 
 			for (int i = 0; i < this.edges.size(); i++) {
-				Edge a = this.edges.get(i), b = other.edges.get(i);
+				Edge a = this.edges.get(i),
+					b = other.edges.get(i);
 
-				if (a.low() != b.low() || a.high() != b.high() || a.child() != b.child()) {
+				if (
+					a.low() != b.low() ||
+					a.high() != b.high() ||
+					a.child() != b.child()
+				) {
 					return false;
 				}
 			}
@@ -297,7 +316,9 @@ public final class IDDFactory {
 
 	@Override
 	public String toString() {
-		return ("IDDFactory[order=" + order + ", nodes=" + uniqueTable.size() + "]");
+		return (
+			"IDDFactory[order=" + order + ", nodes=" + uniqueTable.size() + "]"
+		);
 	}
 
 	// ---- Apply operations ----
@@ -405,11 +426,14 @@ public final class IDDFactory {
 
 	private IDD applySameVar(IDD f, IDD g, int var, Operation op) {
 		List<Edge> newEdges = new ArrayList<>();
-		int i = 0, j = 0;
-		List<Edge> fEdges = f.edges(), gEdges = g.edges();
+		int i = 0,
+			j = 0;
+		List<Edge> fEdges = f.edges(),
+			gEdges = g.edges();
 
 		while (i < fEdges.size() && j < gEdges.size()) {
-			Edge ef = fEdges.get(i), eg = gEdges.get(j);
+			Edge ef = fEdges.get(i),
+				eg = gEdges.get(j);
 			int lo = Math.max(ef.low(), eg.low());
 			int hi = Math.min(ef.high(), eg.high());
 
@@ -505,7 +529,11 @@ public final class IDDFactory {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(System.identityHashCode(f), System.identityHashCode(g), op);
+			return Objects.hash(
+				System.identityHashCode(f),
+				System.identityHashCode(g),
+				op
+			);
 		}
 	}
 }

@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import ru.snake.collection.idd.core.IDD;
-import ru.snake.collection.idd.operation.Evaluate;
+import ru.snake.collection.idd.core.operation.Evaluate;
 
 /**
  * Command-line interface for firewall rule analysis.

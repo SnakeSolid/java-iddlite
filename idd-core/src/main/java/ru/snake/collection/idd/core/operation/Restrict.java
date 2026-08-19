@@ -1,8 +1,7 @@
-package ru.snake.collection.idd.operation;
+package ru.snake.collection.idd.core.operation;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
@@ -13,8 +12,7 @@ import ru.snake.collection.idd.core.IDDFactory;
  */
 public final class Restrict {
 
-	private Restrict() {
-	}
+	private Restrict() {}
 
 	/**
 	 * Restricts the IDD by setting the named variable to the given value.
@@ -25,7 +23,12 @@ public final class Restrict {
 	 * @param value   the value to set
 	 * @return the restricted IDD
 	 */
-	public static IDD restrict(IDDFactory factory, IDD f, String varName, int value) {
+	public static IDD restrict(
+		IDDFactory factory,
+		IDD f,
+		String varName,
+		int value
+	) {
 		int varIndex = factory.order().index(varName);
 		return restrict(factory, f, varIndex, value);
 	}
@@ -34,7 +37,12 @@ public final class Restrict {
 	 * Restricts the IDD by setting the variable at the given index to the given
 	 * value.
 	 */
-	public static IDD restrict(IDDFactory factory, IDD f, int varIndex, int value) {
+	public static IDD restrict(
+		IDDFactory factory,
+		IDD f,
+		int varIndex,
+		int value
+	) {
 		if (f.isTerminal()) {
 			return f;
 		}

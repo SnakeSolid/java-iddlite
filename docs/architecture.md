@@ -110,7 +110,7 @@ For multiple variables, it builds independent single-variable IDDs and ANDs them
 
 Defines the fixed global ordering of variables. Lower index = higher in the diagram. Used by all operations to ensure canonical traversal. Contains only order-related logic (name-to-index lookup, size, comparison). Range management has been extracted to `VariableRanges`.
 
-### `VariableRange` (util)
+### `VariableRange` (core.util)
 
 Represents the valid value range `[min, max]` for a variable. Default is the full integer range `[MIN_VALUE, MAX_VALUE]`. Specialized ranges (e.g., `0..65535` for ports) constrain gap-filling and reduction to the semantic domain of the variable.
 

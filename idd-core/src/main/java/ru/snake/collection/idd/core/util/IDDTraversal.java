@@ -1,8 +1,7 @@
-package ru.snake.collection.idd.util;
+package ru.snake.collection.idd.core.util;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 
@@ -22,8 +21,7 @@ import ru.snake.collection.idd.core.IDD;
  */
 public final class IDDTraversal {
 
-	private IDDTraversal() {
-	}
+	private IDDTraversal() {}
 
 	/**
 	 * DFS traversal that assigns a unique string label ({@code "n0"},
@@ -33,7 +31,11 @@ public final class IDDTraversal {
 	 * @param labels  map to populate with node-to-label mappings
 	 * @param counter the label counter
 	 */
-	public static void assignLabels(IDD f, Map<IDD, String> labels, Counter counter) {
+	public static void assignLabels(
+		IDD f,
+		Map<IDD, String> labels,
+		Counter counter
+	) {
 		if (labels.containsKey(f)) {
 			return;
 		}
@@ -67,7 +69,12 @@ public final class IDDTraversal {
 	 * @param formatter the value formatter
 	 * @return a string like {@code [10.0.0.0,10.0.0.255]} or {@code [1,5]}
 	 */
-	public static String formatInterval(int varIndex, int low, int high, ValueFormatter formatter) {
+	public static String formatInterval(
+		int varIndex,
+		int low,
+		int high,
+		ValueFormatter formatter
+	) {
 		String lowStr = formatter.format(varIndex, low);
 		String highStr = formatter.format(varIndex, high);
 		return "[" + lowStr + "," + highStr + "]";

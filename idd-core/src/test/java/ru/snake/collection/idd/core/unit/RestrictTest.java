@@ -1,4 +1,4 @@
-package ru.snake.collection.idd.unit;
+package ru.snake.collection.idd.core.unit;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -12,8 +12,8 @@ import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.core.VariableRanges;
-import ru.snake.collection.idd.operation.Restrict;
-import ru.snake.collection.idd.util.VariableRange;
+import ru.snake.collection.idd.core.operation.Restrict;
+import ru.snake.collection.idd.core.util.VariableRange;
 
 class RestrictTest {
 

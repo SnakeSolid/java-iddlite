@@ -1,10 +1,9 @@
-package ru.snake.collection.idd.operation;
+package ru.snake.collection.idd.core.operation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import ru.snake.collection.idd.core.Edge;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
@@ -14,8 +13,7 @@ import ru.snake.collection.idd.core.IDDFactory;
  */
 public final class Quantify {
 
-	private Quantify() {
-	}
+	private Quantify() {}
 
 	/**
 	 * Existential quantification: eliminates the variable by OR-ing all

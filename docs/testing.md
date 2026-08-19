@@ -7,7 +7,7 @@
 
 ## Test structure
 
-```src/test/java/ru/snake/collection/idd/
+```src/test/java/ru/snake/collection/idd/core/
 ├── unit/               — Unit tests for individual components
 │   ├── VariableRangeTest — Valid range construction, singleton, contains, equality (12 tests)
 │   ├── VariableRangesTest — Default ranges, custom ranges, name/index lookup, partial maps (7 tests)

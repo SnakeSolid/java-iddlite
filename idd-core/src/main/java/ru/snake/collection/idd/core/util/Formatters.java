@@ -1,9 +1,8 @@
-package ru.snake.collection.idd.util;
+package ru.snake.collection.idd.core.util;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntFunction;
-
 import ru.snake.collection.idd.core.VariableOrder;
 
 /**
@@ -19,7 +18,7 @@ import ru.snake.collection.idd.core.VariableOrder;
  * </ul>
  * <p>
  * Typical usage:
- * 
+ *
  * <pre>
  * ValueFormatter formatter = Formatters.builder()
  * 	.forIndex("src_ip", ipv4())
@@ -32,8 +31,7 @@ import ru.snake.collection.idd.core.VariableOrder;
  */
 public final class Formatters {
 
-	private Formatters() {
-	}
+	private Formatters() {}
 
 	// ==================================================================
 	// Built-in formatters
@@ -69,7 +67,8 @@ public final class Formatters {
 	 *         <code>UDP</code>, <code>ICMP</code>
 	 */
 	public static IntFunction<String> ipProtocol() {
-		return value -> PROTOCOL_NAMES.getOrDefault(value, Integer.toString(value));
+		return value ->
+			PROTOCOL_NAMES.getOrDefault(value, Integer.toString(value));
 	}
 
 	/**
@@ -177,7 +176,9 @@ public final class Formatters {
 
 		private Builder(VariableOrder order) {
 			if (order == null) {
-				throw new NullPointerException("VariableOrder must not be null");
+				throw new NullPointerException(
+					"VariableOrder must not be null"
+				);
 			}
 
 			this.order = order;

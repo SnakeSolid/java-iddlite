@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import ru.snake.collection.idd.core.IDD;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
-import ru.snake.collection.idd.operation.Evaluate;
+import ru.snake.collection.idd.core.operation.Evaluate;
 
 class FirewallParserTest {
 

@@ -1,4 +1,4 @@
-package ru.snake.collection.idd.util;
+package ru.snake.collection.idd.core.util;
 
 import java.util.Objects;
 
@@ -20,7 +20,10 @@ public final class VariableRange {
 	private final int max;
 
 	/** Cached full-range instance. */
-	private static final VariableRange FULL_RANGE = new VariableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
+	private static final VariableRange FULL_RANGE = new VariableRange(
+		Integer.MIN_VALUE,
+		Integer.MAX_VALUE
+	);
 
 	/**
 	 * Constructs a range with the given bounds.
@@ -31,7 +34,9 @@ public final class VariableRange {
 	 */
 	public VariableRange(int min, int max) {
 		if (min > max) {
-			throw new IllegalArgumentException("min (" + min + ") > max (" + max + ")");
+			throw new IllegalArgumentException(
+				"min (" + min + ") > max (" + max + ")"
+			);
 		}
 
 		this.min = min;

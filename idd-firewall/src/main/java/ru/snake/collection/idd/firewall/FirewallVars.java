@@ -5,7 +5,7 @@ import java.util.Map;
 import ru.snake.collection.idd.core.IDDFactory;
 import ru.snake.collection.idd.core.VariableOrder;
 import ru.snake.collection.idd.core.VariableRanges;
-import ru.snake.collection.idd.util.VariableRange;
+import ru.snake.collection.idd.core.util.VariableRange;
 
 /**
  * Defines the five predefined firewall variables and their ranges.

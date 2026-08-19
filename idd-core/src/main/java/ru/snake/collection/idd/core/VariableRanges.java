@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import ru.snake.collection.idd.util.VariableRange;
+import ru.snake.collection.idd.core.util.VariableRange;
 
 /**
  * Maps each variable to its valid value range.
@@ -31,7 +30,10 @@ public final class VariableRanges {
 	 *                     empty
 	 * @param varOrder the variable order (to determine the index list)
 	 */
-	public VariableRanges(Map<String, VariableRange> ranges, VariableOrder varOrder) {
+	public VariableRanges(
+		Map<String, VariableRange> ranges,
+		VariableOrder varOrder
+	) {
 		this.rangesByName = new HashMap<>(ranges);
 		this.rangeByIndex = new ArrayList<>();
 
@@ -77,7 +79,9 @@ public final class VariableRanges {
 	 */
 	public VariableRange range(int index) {
 		if (index < 0 || index >= rangeByIndex.size()) {
-			throw new IllegalArgumentException("Variable index out of range: " + index);
+			throw new IllegalArgumentException(
+				"Variable index out of range: " + index
+			);
 		}
 
 		return rangeByIndex.get(index);
