@@ -18,22 +18,28 @@ Ideal for firewall rule sets, policy evaluation, and any domain with interval-ba
 ## Quick start
 
 ```java
+// 1. Define variable order
 VariableOrder order = new VariableOrder("x", "y");
 IDDFactory factory = new IDDFactory(order);
 
-// Build with the fluent builder
+// 2. Build with the fluent builder
 IDD rule = factory.builder()
     .when("x").in(1, 10).then(true)
     .when("x").in(11, 20).then(false)
     .build();
 
-// Operations
+// 3. Combine with Boolean operations
 IDD combined = factory.and(rule, anotherRule);
 IDD negated = factory.not(rule);
+
+// 4. Restrict a variable to a concrete value
 IDD restricted = Restrict.restrict(factory, rule, "x", 5);
 
-// Evaluate
+// 5. Evaluate — Map-based (convenient)
 boolean result = Evaluate.evaluate(rule, order, Map.of("x", 7));
+
+//    Evaluate — int[] (zero-allocation, high-throughput)
+boolean fast = Evaluate.evaluate(rule, new int[] { 7, 3 });
 ```
 
 ### Variable ranges
@@ -52,7 +58,7 @@ VariableRanges ranges = new VariableRanges(
 IDDFactory factory = new IDDFactory(order, ranges);
 ```
 
-Gap filling and reduction now use each variable's range instead of `Integer.MIN_VALUE..Integer.MAX_VALUE`.
+Gap filling and reduction use each variable's range instead of `Integer.MIN_VALUE..Integer.MAX_VALUE`.
 
 ## Key features
 
@@ -68,15 +74,13 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 | Fast evaluation | O(depth) walk — `int[]` path avoids per-call Map allocation |
 | Visualization | Mermaid diagram export + pretty-printer (3 modes) |
 
-## Packages
+## Modules
 
-| Package | Contents |
-|---|---|
-| `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder`, `VariableRanges`, `Operation` |
-| `ru.snake.collection.idd.core.operation` | `Evaluate`, `Quantify`, `Restrict` |
-| `ru.snake.collection.idd.core.util` | `VariableRange`, `ValueFormatter`, `Formatters`, `MermaidExporter`, `IDDPrinter`, `IDDTraversal` |
-| `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `FirewallRule`, `FirewallPacket`, `FirewallVars`, `IpUtil`, `PacketParser` |
-| `ru.snake.collection.idd.benchmark` | `FirewallEvaluationBenchmark`, `FirewallCompilationBenchmark`, `FirewallBenchmarkUtils`, `FirewallPolicyBuilder`, `FirewallRuleSet` |
+| Module | Package | Description |
+|---|---|---|
+| `idd-core` | `ru.snake.collection.idd.core.*` | Core IDD library — nodes, factory, operations, visualization |
+| `idd-firewall` | `ru.snake.collection.idd.firewall` | Firewall rule analysis CLI — parses rules, builds policy IDD, evaluates packets |
+| `idd-benchmark` | `ru.snake.collection.idd.benchmark` | JMH benchmarks for compilation and evaluation performance |
 
 ## Building
 
