@@ -55,8 +55,9 @@ All core classes are `final` with `private final` fields. No setters exist.
 |---|---|
 | `IDD` | immutable |
 | `Edge` | immutable |
+| `VariableOrder` | immutable (variable ordering only) |
+| `VariableRanges` | immutable (range lookup maps) |
 | `VariableRange` | immutable |
-| `VariableOrder` | immutable |
 | `Operation` | immutable (enum) |
 | `IDDFactory` | mutable state (`uniqueTable`, `applyCache`) |
 | `IDDBuilder` | mutable (builder pattern, consumed on `build()`) |

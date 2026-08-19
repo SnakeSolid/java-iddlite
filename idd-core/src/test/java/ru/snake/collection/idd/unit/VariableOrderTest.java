@@ -58,4 +58,29 @@ class VariableOrderTest {
 		assertEquals(0, order.compare(1, 1));
 		assertEquals(1, order.compare(2, 0));
 	}
+
+	@Test
+	@DisplayName("atOrBefore checks ordering")
+	void testAtOrBefore() {
+		VariableOrder order = new VariableOrder("a", "b", "c");
+		assertEquals(true, order.atOrBefore(0, 1));
+		assertEquals(true, order.atOrBefore(1, 1));
+		assertEquals(false, order.atOrBefore(2, 0));
+	}
+
+	@Test
+	@DisplayName("contains checks variable presence")
+	void testContains() {
+		VariableOrder order = new VariableOrder("x", "y");
+		assertEquals(true, order.contains("x"));
+		assertEquals(true, order.contains("y"));
+		assertEquals(false, order.contains("z"));
+	}
+
+	@Test
+	@DisplayName("toString format")
+	void testToString() {
+		VariableOrder order = new VariableOrder("a", "b", "c");
+		assertEquals("VariableOrder[a, b, c]", order.toString());
+	}
 }

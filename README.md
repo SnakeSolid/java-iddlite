@@ -41,12 +41,15 @@ boolean result = Evaluate.evaluate(rule, order, Map.of("x", 7));
 Constrain variables to their semantic domains:
 
 ```java
-Map<String, VariableRange> ranges = Map.of(
-    "port",  VariableRange.of(0, 65535),
-    "proto", VariableRange.of(0, 255)
+VariableOrder order = new VariableOrder("proto", "port");
+VariableRanges ranges = new VariableRanges(
+    Map.of(
+        "port",  VariableRange.of(0, 65535),
+        "proto", VariableRange.of(0, 255)
+    ),
+    order
 );
-VariableOrder order = new VariableOrder(ranges, "proto", "port");
-IDDFactory factory = new IDDFactory(order);
+IDDFactory factory = new IDDFactory(order, ranges);
 ```
 
 Gap filling and reduction now use each variable's range instead of `Integer.MIN_VALUE..Integer.MAX_VALUE`.
@@ -68,7 +71,7 @@ Gap filling and reduction now use each variable's range instead of `Integer.MIN_
 
 | Package | Contents |
 |---|---|
-| `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder`, `Operation` |
+| `ru.snake.collection.idd.core` | `IDD`, `Edge`, `IDDFactory`, `IDDBuilder`, `VariableOrder`, `VariableRanges`, `Operation` |
 | `ru.snake.collection.idd.operation` | `Evaluate`, `Quantify`, `Restrict` |
 | `ru.snake.collection.idd.util` | `VariableRange`, `ValueFormatter`, `Formatters`, `MermaidExporter`, `IDDPrinter`, `IDDTraversal` |
 | `ru.snake.collection.idd.firewall` | `FirewallCli`, `FirewallParser`, `FirewallBuilder`, `FirewallRule`, `FirewallPacket`, `FirewallVars`, `IpUtil`, `PacketParser` |

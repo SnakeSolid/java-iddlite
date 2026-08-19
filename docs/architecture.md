@@ -28,6 +28,7 @@ graph TD
         IDDFactory["IDDFactory"]
         IDDBuilder["IDDBuilder"]
         VariableOrder["VariableOrder"]
+        VariableRanges["VariableRanges"]
         VariableRange["VariableRange"]
         Operation["Operation (enum)"]
     end
@@ -51,8 +52,9 @@ graph TD
     IDDFactory --> Edge
     IDDFactory --> VariableOrder
     IDDFactory --> Operation
-    VariableOrder --> VariableRange
-    IDDFactory --> VariableRange
+    IDDFactory --> VariableOrder
+    IDDFactory --> VariableRanges
+    VariableRanges --> VariableRange
 
     IDDPrinter --> ValueFormatter
     IDDPrinter --> Formatters
@@ -102,11 +104,15 @@ For multiple variables, it builds independent single-variable IDDs and ANDs them
 
 ### `VariableOrder` (core)
 
-Defines the fixed global ordering of variables. Lower index = higher in the diagram. Used by all operations to ensure canonical traversal. Each variable can have an associated `VariableRange` that defines its valid value domain.
+Defines the fixed global ordering of variables. Lower index = higher in the diagram. Used by all operations to ensure canonical traversal. Contains only order-related logic (name-to-index lookup, size, comparison). Range management has been extracted to `VariableRanges`.
 
 ### `VariableRange` (util)
 
 Represents the valid value range `[min, max]` for a variable. Default is the full integer range `[MIN_VALUE, MAX_VALUE]`. Specialized ranges (e.g., `0..65535` for ports) constrain gap-filling and reduction to the semantic domain of the variable.
+
+### `VariableRanges` (core)
+
+Maps each variable to its valid value range. Maintains both a name-based lookup (`range(name, order)`) and an O(1) index-based lookup (`range(index)`). Variables not explicitly mapped default to the full integer range. Constructed alongside `VariableOrder` and passed to `IDDFactory`.
 
 ## Operations
 
@@ -154,12 +160,15 @@ flowchart LR
 Each variable can have a custom valid range defined in the `VariableOrder`:
 
 ```java
-Map<String, VariableRange> ranges = Map.of(
-    "port",  VariableRange.of(0, 65535),
-    "proto", VariableRange.of(0, 255)
+VariableOrder order = new VariableOrder("proto", "port");
+VariableRanges ranges = new VariableRanges(
+    Map.of(
+        "port",  VariableRange.of(0, 65535),
+        "proto", VariableRange.of(0, 255)
+    ),
+    order
 );
-VariableOrder order = new VariableOrder(ranges, "proto", "port");
-IDDFactory factory = new IDDFactory(order);
+IDDFactory factory = new IDDFactory(order, ranges);
 ```
 
 When a variable has a custom range:
